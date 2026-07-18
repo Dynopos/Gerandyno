@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.reports.products.title')" :subtitle="__('app.reports.products.subtitle')">
             <x-slot name="actions">
-                <x-export-buttons export-route="reports.products.export" :params="request()->query()" />
+                <x-export-buttons export-route="reports.products.export" email-route="reports.products.email" :params="request()->query()" />
             </x-slot>
         </x-page-header>
 

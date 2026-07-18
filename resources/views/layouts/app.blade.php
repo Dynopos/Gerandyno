@@ -85,6 +85,19 @@
                     </div>
                 @endisset
 
+                <!-- Flash status -->
+                @if (session('status'))
+                    <div
+                        x-data="{ show: true }"
+                        x-show="show"
+                        x-init="setTimeout(() => show = false, 5000)"
+                        x-transition
+                        class="mx-4 mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 sm:mx-6 lg:mx-8"
+                    >
+                        {{ session('status') }}
+                    </div>
+                @endif
+
                 <!-- Page content -->
                 <main class="flex-1">
                     {{ $slot }}

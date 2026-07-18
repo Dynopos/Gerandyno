@@ -54,6 +54,15 @@ return [
         'pdf' => 'Eksport PDF',
     ],
 
+    'email_report' => [
+        'button' => 'Emel Laporan',
+        'sending' => 'Menghantar...',
+        'sent' => 'Laporan telah dihantar ke e-mel anda (:email).',
+        'greeting' => 'Salam, :name',
+        'body' => 'Berikut ialah :title untuk :company bagi tempoh :period. Fail dilampirkan bersama e-mel ini.',
+        'thanks' => 'Terima kasih',
+    ],
+
     'reports' => [
         'sales' => [
             'title' => 'Laporan Jualan',
@@ -87,6 +96,7 @@ return [
             'transactions' => 'Bilangan Transaksi',
             'total_sales' => 'Jumlah Jualan',
             'view_monthly' => 'Lihat Bulanan &rarr;',
+            'all_time' => 'Keseluruhan',
         ],
         'products' => [
             'title' => 'Laporan Produk',

@@ -21,13 +21,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('company')->prefix('reports')->name('reports.')->group(function () {
         Route::get('/sales', [SalesReportController::class, 'index'])->name('sales.index');
         Route::get('/sales/export/{format}', [SalesReportController::class, 'export'])->name('sales.export');
+        Route::post('/sales/email', [SalesReportController::class, 'email'])->middleware('throttle:6,1')->name('sales.email');
         Route::get('/sales/{receipt}', [SalesReportController::class, 'show'])->name('sales.show');
         Route::get('/monthly', [MonthlyReportController::class, 'index'])->name('monthly');
         Route::get('/monthly/export/{format}', [MonthlyReportController::class, 'export'])->name('monthly.export');
+        Route::post('/monthly/email', [MonthlyReportController::class, 'email'])->middleware('throttle:6,1')->name('monthly.email');
         Route::get('/yearly', [YearlyReportController::class, 'index'])->name('yearly');
         Route::get('/yearly/export/{format}', [YearlyReportController::class, 'export'])->name('yearly.export');
+        Route::post('/yearly/email', [YearlyReportController::class, 'email'])->middleware('throttle:6,1')->name('yearly.email');
         Route::get('/products', [ProductReportController::class, 'index'])->name('products');
         Route::get('/products/export/{format}', [ProductReportController::class, 'export'])->name('products.export');
+        Route::post('/products/email', [ProductReportController::class, 'email'])->middleware('throttle:6,1')->name('products.email');
     });
 });
 

@@ -54,6 +54,15 @@ return [
         'pdf' => 'Export PDF',
     ],
 
+    'email_report' => [
+        'button' => 'Email Report',
+        'sending' => 'Sending...',
+        'sent' => 'The report has been sent to your email (:email).',
+        'greeting' => 'Hi :name',
+        'body' => 'Here is your :title for :company, for the period :period. The file is attached to this email.',
+        'thanks' => 'Thanks',
+    ],
+
     'reports' => [
         'sales' => [
             'title' => 'Sales Report',
@@ -87,6 +96,7 @@ return [
             'transactions' => 'Transactions',
             'total_sales' => 'Total Sales',
             'view_monthly' => 'View Monthly &rarr;',
+            'all_time' => 'All Time',
         ],
         'products' => [
             'title' => 'Product Report',

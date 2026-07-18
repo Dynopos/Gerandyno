@@ -3,18 +3,20 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Exports\YearlyExport;
+use App\Http\Controllers\Concerns\EmailsReports;
 use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Support\Reports\ExportFormat;
 use App\Support\Reports\ReportExport;
 use App\Support\Reports\SalesReportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class YearlyReportController extends Controller
 {
-    use ExportsReports;
+    use EmailsReports, ExportsReports;
 
     public function __construct(
         private readonly SalesReportService $reports,
@@ -33,6 +35,32 @@ class YearlyReportController extends Controller
 
     public function export(Request $request, ExportFormat $format): Response
     {
+        [$export, $filename] = $this->buildExport($request);
+
+        return $this->downloadReport($export, $format, $filename);
+    }
+
+    public function email(Request $request): RedirectResponse
+    {
+        [$export, $filename] = $this->buildExport($request);
+
+        $this->emailReport(
+            $export,
+            ExportFormat::Pdf,
+            $filename,
+            $request->user(),
+            __('app.reports.yearly.title'),
+            __('app.reports.yearly.all_time'),
+        );
+
+        return back()->with('status', __('app.email_report.sent', ['email' => $request->user()->email]));
+    }
+
+    /**
+     * @return array{0: ReportExport, 1: string}
+     */
+    private function buildExport(Request $request): array
+    {
         $years = $this->reports->yearlySeries();
 
         $export = new ReportExport(
@@ -46,6 +74,6 @@ class YearlyReportController extends Controller
             ],
         );
 
-        return $this->downloadReport($export, $format, 'laporan-tahunan-'.now()->format('Y-m-d'));
+        return [$export, 'laporan-tahunan-'.now()->format('Y-m-d')];
     }
 }
