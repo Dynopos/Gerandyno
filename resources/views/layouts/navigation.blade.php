@@ -15,6 +15,46 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if (Auth::user()->company_id)
+                        <div
+                            x-data="{ open: false }"
+                            @mouseenter="open = true"
+                            @mouseleave="open = false"
+                            class="relative flex items-center"
+                        >
+                            <button
+                                type="button"
+                                @class([
+                                    'inline-flex items-center gap-1 border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none',
+                                    'border-indigo-400 text-gray-900' => request()->routeIs('reports.*'),
+                                    'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' => ! request()->routeIs('reports.*'),
+                                ])
+                            >
+                                {{ __('Laporan') }}
+                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 translate-y-1"
+                                class="absolute left-0 top-full z-50 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                                style="display: none;"
+                            >
+                                <x-dropdown-link :href="route('reports.sales.index')">{{ __('Jualan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('reports.monthly')">{{ __('Bulanan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('reports.yearly')">{{ __('Tahunan') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('reports.products')">{{ __('Produk') }}</x-dropdown-link>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +110,21 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if (Auth::user()->company_id)
+                <x-responsive-nav-link :href="route('reports.sales.index')" :active="request()->routeIs('reports.sales.*')">
+                    {{ __('Laporan Jualan') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reports.monthly')" :active="request()->routeIs('reports.monthly')">
+                    {{ __('Laporan Bulanan') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reports.yearly')" :active="request()->routeIs('reports.yearly')">
+                    {{ __('Laporan Tahunan') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reports.products')" :active="request()->routeIs('reports.products')">
+                    {{ __('Laporan Produk') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

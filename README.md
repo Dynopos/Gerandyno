@@ -27,7 +27,7 @@ This repository is being built in phases. Current status:
       database schema, tenant isolation.
 - [x] **Phase 2** — SalesPlay API client/sync service, `salesplay:sync`
       command, scheduler.
-- [ ] **Phase 3** — Dashboard and reports.
+- [x] **Phase 3** — Dashboard and reports.
 - [ ] **Phase 4** — CSV/Excel export.
 - [ ] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
 
@@ -187,6 +187,27 @@ php artisan test
 
 Tests run against an in-memory SQLite database (see `phpunit.xml`), so no
 MySQL setup is required to run the test suite.
+
+## Dashboard & reports
+
+- `/dashboard` — today/this-month/this-year sales, today's transaction count,
+  a daily sales chart for the current month, and a monthly sales chart for
+  the current year (Chart.js, via `resources/js/charts.js`). DynoPOS admins
+  (no `company_id`) see a placeholder instead, since this page is always
+  scoped to one company.
+- `/reports/sales` — filterable (today / yesterday / this month / last month /
+  custom range) transaction list; click a row for the full receipt detail
+  (`/reports/sales/{receipt}`), including items and payments.
+- `/reports/monthly` — monthly summary for a selected year (zero-filled
+  months), with a year selector.
+- `/reports/yearly` — summary grouped by calendar year, across all history.
+- `/reports/products` — quantity sold + total sales per product, with the
+  same date filter as the sales report.
+- All of the above (except `/dashboard`, gated separately) sit behind the
+  `company` middleware (`EnsureUserHasCompany`), since reports only make
+  sense for a customer user scoped to one tenant.
+- Aggregation logic lives in `App\Support\Reports\SalesReportService`; date
+  filter parsing in `App\Support\Reports\ReportPeriodResolver`.
 
 ## Multi-tenancy & security notes
 
