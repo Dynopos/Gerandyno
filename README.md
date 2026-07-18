@@ -214,29 +214,37 @@ MySQL setup is required to run the test suite.
 ## Export (CSV / Excel)
 
 Every report page (`/reports/sales`, `/reports/monthly`, `/reports/yearly`,
-`/reports/products`) has "Export CSV" and "Export Excel" buttons that export
-exactly what's currently on screen — the sales and products exports carry the
-active date filter (`?filter=...&from=...&to=...`) through to the download,
-and the monthly export carries the selected `?year=`.
+`/reports/products`) has "Export CSV", "Export Excel", and "Export PDF"
+buttons that export exactly what's currently on screen — the sales and
+products exports carry the active date filter
+(`?filter=...&from=...&to=...`) through to the download, and the monthly
+export carries the selected `?year=`.
 
-Built on [Laravel Excel](https://laravel-excel.com):
+Built on [Laravel Excel](https://laravel-excel.com) (csv/xlsx) and
+[barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) (pdf):
 
-- Export classes live in `app/Exports/` (`SalesExport`, `MonthlyExport`,
-  `YearlyExport`, `ProductsExport`) — each just maps already-tenant-scoped
-  data (from `SalesReportService` or a scoped `Receipt` query) to rows and
-  headings, so there's no risk of an export leaking another company's data.
-- `App\Support\Reports\ExportFormat` is a backed enum (`csv`, `xlsx`) bound
-  directly from the `{format}` route segment — Laravel resolves it and
-  404s automatically for anything else (e.g. `/reports/sales/export/pdf`
-  right now).
+- `App\Support\Reports\ExportFormat` is a backed enum (`csv`, `xlsx`, `pdf`)
+  bound directly from the `{format}` route segment — Laravel resolves it
+  and 404s automatically for anything else.
+- Each report controller's `export()` action builds one
+  `App\Support\Reports\ReportExport` — a small DTO bundling a Laravel Excel
+  export object (`app/Exports/*.php`, for csv/xlsx) with a PDF Blade view +
+  data (`resources/views/exports/pdf/*.blade.php`). Both sides are built
+  from the exact same already-tenant-scoped data (from `SalesReportService`
+  or a scoped `Receipt` query), so no export format can leak another
+  company's data.
 - `App\Http\Controllers\Concerns\ExportsReports::downloadReport()` is the
-  single chokepoint every report controller's `export()` action calls.
-  **Adding PDF later** is just: add an `ExportFormat::Pdf` case, add a
-  matching branch in that one method (e.g. rendering a Blade view via
-  `barryvdh/laravel-dompdf`), and add "Pdf" to the export-buttons component —
-  no changes needed to the export classes or the data-fetching logic.
-- Tested with `Excel::fake()` (see `tests/Feature/ExportTest.php`) —
-  including that a customer's export never contains another company's rows.
+  single chokepoint every report controller's `export()` action calls,
+  matching on `ExportFormat` to decide whether to stream a spreadsheet or
+  render+download a PDF. **Adding a further format later** is just: a new
+  `ExportFormat` case, a matching branch in that one method, and a button
+  in the `x-export-buttons` component.
+- PDF layout: `resources/views/exports/pdf/layout.blade.php` (DynoPOS
+  branding, company name, report title/period, generated timestamp) is
+  `@extend`ed by each report's PDF view, which only supplies the table.
+- Tested with `Excel::fake()` and by rendering the PDF Blade views directly
+  (see `tests/Feature/ExportTest.php`) — including that a customer's export
+  never contains another company's rows.
 
 ## Language (Bahasa Melayu / English)
 

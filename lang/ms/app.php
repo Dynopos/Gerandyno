@@ -51,6 +51,7 @@ return [
     'export' => [
         'csv' => 'Eksport CSV',
         'excel' => 'Eksport Excel',
+        'pdf' => 'Eksport PDF',
     ],
 
     'reports' => [

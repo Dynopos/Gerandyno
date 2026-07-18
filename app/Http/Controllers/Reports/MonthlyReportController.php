@@ -6,10 +6,11 @@ use App\Exports\MonthlyExport;
 use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Support\Reports\ExportFormat;
+use App\Support\Reports\ReportExport;
 use App\Support\Reports\SalesReportService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class MonthlyReportController extends Controller
 {
@@ -33,12 +34,23 @@ class MonthlyReportController extends Controller
         ]);
     }
 
-    public function export(Request $request, ExportFormat $format): BinaryFileResponse
+    public function export(Request $request, ExportFormat $format): Response
     {
         $year = $this->resolveYear($request);
         $months = $this->reports->monthlySeries($year);
 
-        return $this->downloadReport(new MonthlyExport($months), $format, "laporan-bulanan-{$year}");
+        $export = new ReportExport(
+            spreadsheet: new MonthlyExport($months),
+            pdfView: 'exports.pdf.monthly',
+            pdfData: [
+                'title' => __('app.reports.monthly.title'),
+                'subtitle' => (string) $year,
+                'companyName' => $request->user()->company->name,
+                'months' => $months,
+            ],
+        );
+
+        return $this->downloadReport($export, $format, "laporan-bulanan-{$year}");
     }
 
     private function resolveYear(Request $request): int

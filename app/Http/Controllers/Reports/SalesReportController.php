@@ -7,12 +7,13 @@ use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Models\Receipt;
 use App\Support\Reports\ExportFormat;
+use App\Support\Reports\ReportExport;
 use App\Support\Reports\ReportPeriodResolver;
 use App\Support\Reports\SalesReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class SalesReportController extends Controller
 {
@@ -52,7 +53,7 @@ class SalesReportController extends Controller
         ]);
     }
 
-    public function export(Request $request, ExportFormat $format): BinaryFileResponse
+    public function export(Request $request, ExportFormat $format): Response
     {
         $period = ReportPeriodResolver::resolve($request);
 
@@ -63,6 +64,17 @@ class SalesReportController extends Controller
 
         $filename = 'laporan-jualan-'.Str::slug($period->label).'-'.now()->format('Y-m-d');
 
-        return $this->downloadReport(new SalesExport($receipts), $format, $filename);
+        $export = new ReportExport(
+            spreadsheet: new SalesExport($receipts),
+            pdfView: 'exports.pdf.sales',
+            pdfData: [
+                'title' => __('app.reports.sales.title'),
+                'subtitle' => $period->label,
+                'companyName' => $request->user()->company->name,
+                'receipts' => $receipts,
+            ],
+        );
+
+        return $this->downloadReport($export, $format, $filename);
     }
 }

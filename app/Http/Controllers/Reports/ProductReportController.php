@@ -6,12 +6,13 @@ use App\Exports\ProductsExport;
 use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Support\Reports\ExportFormat;
+use App\Support\Reports\ReportExport;
 use App\Support\Reports\ReportPeriodResolver;
 use App\Support\Reports\SalesReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductReportController extends Controller
 {
@@ -34,7 +35,7 @@ class ProductReportController extends Controller
         ]);
     }
 
-    public function export(Request $request, ExportFormat $format): BinaryFileResponse
+    public function export(Request $request, ExportFormat $format): Response
     {
         $period = ReportPeriodResolver::resolve($request);
 
@@ -42,6 +43,17 @@ class ProductReportController extends Controller
 
         $filename = 'laporan-produk-'.Str::slug($period->label).'-'.now()->format('Y-m-d');
 
-        return $this->downloadReport(new ProductsExport($products), $format, $filename);
+        $export = new ReportExport(
+            spreadsheet: new ProductsExport($products),
+            pdfView: 'exports.pdf.products',
+            pdfData: [
+                'title' => __('app.reports.products.title'),
+                'subtitle' => $period->label,
+                'companyName' => $request->user()->company->name,
+                'products' => $products,
+            ],
+        );
+
+        return $this->downloadReport($export, $format, $filename);
     }
 }
