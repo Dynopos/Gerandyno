@@ -246,6 +246,35 @@ Built on [Laravel Excel](https://laravel-excel.com) (csv/xlsx) and
   (see `tests/Feature/ExportTest.php`) — including that a customer's export
   never contains another company's rows.
 
+## Email a report
+
+Each report page also has an "Email Report" button that generates the same
+PDF as the PDF export and emails it as an attachment — **only to the
+authenticated user's own registered email**, never an arbitrary address
+(the form doesn't even accept a `to` field), so this can't be turned into a
+way to send someone else's sales data to a third party. Routes are
+`POST`-only and rate-limited (`throttle:6,1`).
+
+- `App\Mail\ReportMail` is a queued Mailable (`ShouldQueue`) built from the
+  same `ReportExport` DTO the PDF export uses.
+  `App\Http\Controllers\Concerns\EmailsReports::emailReport()` generates the
+  attachment bytes (PDF via dompdf, or csv/xlsx via `Excel::raw()`) and
+  queues the mail via `Mail::to($user->email)->queue(...)`.
+- **Important:** attachment bytes are binary and not valid UTF-8, but queued
+  jobs get JSON-encoded for storage (database/redis queue drivers) —
+  holding raw binary in a public Mailable property throws
+  `Illuminate\Queue\InvalidPayloadException` the moment it's actually
+  pushed onto a real queue driver. `ReportMail` stores the attachment
+  **base64-encoded** internally and only decodes it inside `attachments()`,
+  when the queued job runs. `Mail::fake()` alone does *not* catch this class
+  of bug (it never touches real queue serialization) — see
+  `tests/Feature/EmailReportTest.php::test_report_mail_with_binary_attachment_survives_real_queue_serialization`,
+  which pushes a real job onto the `database` queue driver to prove it
+  survives serialization.
+- Run a queue worker to actually deliver queued report emails (see
+  [Queue setup](#queue-setup) above); with `MAIL_MAILER=log` (the local
+  default) they're written to `storage/logs/laravel.log` instead of sent.
+
 ## Language (Bahasa Melayu / English)
 
 The app defaults to Bahasa Melayu (`APP_LOCALE=ms` in `.env`) with English as

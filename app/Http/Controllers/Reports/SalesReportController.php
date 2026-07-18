@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Exports\SalesExport;
+use App\Http\Controllers\Concerns\EmailsReports;
 use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Models\Receipt;
@@ -10,6 +11,7 @@ use App\Support\Reports\ExportFormat;
 use App\Support\Reports\ReportExport;
 use App\Support\Reports\ReportPeriodResolver;
 use App\Support\Reports\SalesReportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -17,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SalesReportController extends Controller
 {
-    use ExportsReports;
+    use EmailsReports, ExportsReports;
 
     public function __construct(
         private readonly SalesReportService $reports,
@@ -55,6 +57,32 @@ class SalesReportController extends Controller
 
     public function export(Request $request, ExportFormat $format): Response
     {
+        [$export, $filename] = $this->buildExport($request);
+
+        return $this->downloadReport($export, $format, $filename);
+    }
+
+    public function email(Request $request): RedirectResponse
+    {
+        [$export, $filename] = $this->buildExport($request);
+
+        $this->emailReport(
+            $export,
+            ExportFormat::Pdf,
+            $filename,
+            $request->user(),
+            __('app.reports.sales.title'),
+            $export->pdfData['subtitle'],
+        );
+
+        return back()->with('status', __('app.email_report.sent', ['email' => $request->user()->email]));
+    }
+
+    /**
+     * @return array{0: ReportExport, 1: string}
+     */
+    private function buildExport(Request $request): array
+    {
         $period = ReportPeriodResolver::resolve($request);
 
         $receipts = Receipt::with('payments')
@@ -75,6 +103,6 @@ class SalesReportController extends Controller
             ],
         );
 
-        return $this->downloadReport($export, $format, $filename);
+        return [$export, $filename];
     }
 }

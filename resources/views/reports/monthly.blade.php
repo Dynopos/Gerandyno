@@ -13,7 +13,7 @@
                     @endforeach
                 </select>
 
-                <x-export-buttons export-route="reports.monthly.export" :params="['year' => $year]" />
+                <x-export-buttons export-route="reports.monthly.export" email-route="reports.monthly.email" :params="['year' => $year]" />
             </x-slot>
         </x-page-header>
 
