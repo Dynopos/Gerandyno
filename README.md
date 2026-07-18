@@ -28,7 +28,7 @@ This repository is being built in phases. Current status:
 - [x] **Phase 2** — SalesPlay API client/sync service, `salesplay:sync`
       command, scheduler.
 - [x] **Phase 3** — Dashboard and reports.
-- [ ] **Phase 4** — CSV/Excel export.
+- [x] **Phase 4** — CSV/Excel export.
 - [ ] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
 
 ## Installation
@@ -210,6 +210,33 @@ MySQL setup is required to run the test suite.
   filter parsing in `App\Support\Reports\ReportPeriodResolver`.
 - The authenticated UI uses a fixed dark sidebar (`resources/views/layouts/
   sidebar.blade.php`) with a red/orange brand accent, off-canvas on mobile.
+
+## Export (CSV / Excel)
+
+Every report page (`/reports/sales`, `/reports/monthly`, `/reports/yearly`,
+`/reports/products`) has "Export CSV" and "Export Excel" buttons that export
+exactly what's currently on screen — the sales and products exports carry the
+active date filter (`?filter=...&from=...&to=...`) through to the download,
+and the monthly export carries the selected `?year=`.
+
+Built on [Laravel Excel](https://laravel-excel.com):
+
+- Export classes live in `app/Exports/` (`SalesExport`, `MonthlyExport`,
+  `YearlyExport`, `ProductsExport`) — each just maps already-tenant-scoped
+  data (from `SalesReportService` or a scoped `Receipt` query) to rows and
+  headings, so there's no risk of an export leaking another company's data.
+- `App\Support\Reports\ExportFormat` is a backed enum (`csv`, `xlsx`) bound
+  directly from the `{format}` route segment — Laravel resolves it and
+  404s automatically for anything else (e.g. `/reports/sales/export/pdf`
+  right now).
+- `App\Http\Controllers\Concerns\ExportsReports::downloadReport()` is the
+  single chokepoint every report controller's `export()` action calls.
+  **Adding PDF later** is just: add an `ExportFormat::Pdf` case, add a
+  matching branch in that one method (e.g. rendering a Blade view via
+  `barryvdh/laravel-dompdf`), and add "Pdf" to the export-buttons component —
+  no changes needed to the export classes or the data-fetching logic.
+- Tested with `Excel::fake()` (see `tests/Feature/ExportTest.php`) —
+  including that a customer's export never contains another company's rows.
 
 ## Language (Bahasa Melayu / English)
 

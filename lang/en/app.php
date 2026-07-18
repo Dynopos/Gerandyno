@@ -48,6 +48,11 @@ return [
         'apply' => 'Apply',
     ],
 
+    'export' => [
+        'csv' => 'Export CSV',
+        'excel' => 'Export Excel',
+    ],
+
     'reports' => [
         'sales' => [
             'title' => 'Sales Report',

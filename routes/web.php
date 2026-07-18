@@ -20,10 +20,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('company')->prefix('reports')->name('reports.')->group(function () {
         Route::get('/sales', [SalesReportController::class, 'index'])->name('sales.index');
+        Route::get('/sales/export/{format}', [SalesReportController::class, 'export'])->name('sales.export');
         Route::get('/sales/{receipt}', [SalesReportController::class, 'show'])->name('sales.show');
         Route::get('/monthly', [MonthlyReportController::class, 'index'])->name('monthly');
+        Route::get('/monthly/export/{format}', [MonthlyReportController::class, 'export'])->name('monthly.export');
         Route::get('/yearly', [YearlyReportController::class, 'index'])->name('yearly');
+        Route::get('/yearly/export/{format}', [YearlyReportController::class, 'export'])->name('yearly.export');
         Route::get('/products', [ProductReportController::class, 'index'])->name('products');
+        Route::get('/products/export/{format}', [ProductReportController::class, 'export'])->name('products.export');
     });
 });
 

@@ -48,6 +48,11 @@ return [
         'apply' => 'Guna',
     ],
 
+    'export' => [
+        'csv' => 'Eksport CSV',
+        'excel' => 'Eksport Excel',
+    ],
+
     'reports' => [
         'sales' => [
             'title' => 'Laporan Jualan',
