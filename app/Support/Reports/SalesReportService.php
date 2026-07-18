@@ -129,6 +129,35 @@ final class SalesReportService
     }
 
     /**
+     * Top product categories by sales within a date range, each with its
+     * share of the total as a percentage. Items with no linked product (and
+     * so no category) are excluded.
+     *
+     * @return Collection<int, array{category: string, total: float, percentage: float}>
+     */
+    public function categorySales(int $companyId, CarbonInterface $start, CarbonInterface $end, int $limit = 5): Collection
+    {
+        $rows = ReceiptItem::query()
+            ->join('receipts', 'receipts.id', '=', 'receipt_items.receipt_id')
+            ->join('products', 'products.id', '=', 'receipt_items.product_id')
+            ->where('receipts.company_id', $companyId)
+            ->whereBetween('receipts.transaction_date', [$start, $end])
+            ->groupBy('products.category')
+            ->selectRaw("COALESCE(NULLIF(products.category, ''), 'Lain-lain') as category, SUM(receipt_items.total) as total")
+            ->orderByDesc('total')
+            ->limit($limit)
+            ->get();
+
+        $grandTotal = (float) $rows->sum('total');
+
+        return $rows->map(fn ($row) => [
+            'category' => $row->category,
+            'total' => (float) $row->total,
+            'percentage' => $grandTotal > 0 ? round(((float) $row->total / $grandTotal) * 100, 1) : 0.0,
+        ]);
+    }
+
+    /**
      * Distinct calendar years that have at least one receipt, most recent
      * first. Falls back to the current year when there's no data yet.
      *

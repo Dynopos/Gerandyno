@@ -34,6 +34,7 @@ class DashboardController extends Controller
 
         $dailySales = $this->reports->dailySeries($today->startOfMonth());
         $monthlySales = $this->reports->monthlySeries($today->year);
+        $topCategories = $this->reports->categorySales($user->company_id, $today->startOfMonth(), $today->endOfMonth());
 
         $recentReceipts = Receipt::with('payments')
             ->latest('transaction_date')
@@ -48,6 +49,7 @@ class DashboardController extends Controller
             'yearSales' => $yearSales,
             'dailySales' => $dailySales,
             'monthlySales' => $monthlySales,
+            'topCategories' => $topCategories,
             'recentReceipts' => $recentReceipts,
         ]);
     }

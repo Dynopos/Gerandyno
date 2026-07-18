@@ -15,22 +15,81 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-slate-50">
-            @include('layouts.navigation')
+        <div x-data="{ sidebarOpen: false }" class="flex min-h-screen bg-slate-50">
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="border-b border-slate-200 bg-white">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
+            <!-- Mobile backdrop -->
+            <div
+                x-show="sidebarOpen"
+                x-transition:enter="transition-opacity ease-linear duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity ease-linear duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="sidebarOpen = false"
+                class="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
+                style="display: none;"
+            ></div>
+
+            <!-- Sidebar -->
+            <aside
+                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+                class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-900 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0"
+            >
+                @include('layouts.sidebar')
+            </aside>
+
+            <!-- Main column -->
+            <div class="flex min-w-0 flex-1 flex-col">
+                <!-- Topbar -->
+                <header class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
+                    <button @click="sidebarOpen = true" class="text-slate-500 hover:text-slate-700 lg:hidden" aria-label="{{ __('app.nav.open_menu') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6">
+                            <path d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <span class="hidden lg:block"></span>
+
+                    <div class="flex items-center gap-3">
+                        <x-language-switcher />
+
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 focus:outline-none">
+                                    {{ Auth::user()->name }}
+                                    <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('profile.edit')">{{ __('app.nav.profile') }}</x-dropdown-link>
+
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
+                                        {{ __('app.nav.logout') }}
+                                    </x-dropdown-link>
+                                </form>
+                            </x-slot>
+                        </x-dropdown>
                     </div>
                 </header>
-            @endisset
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+                <!-- Page heading (legacy $header slot support) -->
+                @isset($header)
+                    <div class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                @endisset
+
+                <!-- Page content -->
+                <main class="flex-1">
+                    {{ $slot }}
+                </main>
+            </div>
         </div>
     </body>
 </html>
