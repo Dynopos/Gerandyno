@@ -25,15 +25,11 @@ This repository is being built in phases. Current status:
 
 - [x] **Phase 1** — Laravel setup, authentication (Breeze), multi-tenant
       database schema, tenant isolation.
-- [ ] **Phase 2** — SalesPlay API client/sync service, `salesplay:sync`
+- [x] **Phase 2** — SalesPlay API client/sync service, `salesplay:sync`
       command, scheduler.
 - [ ] **Phase 3** — Dashboard and reports.
 - [ ] **Phase 4** — CSV/Excel export.
 - [ ] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
-
-The database schema, config, and encryption plumbing for the SalesPlay
-integration are already in place (see below) even though the sync command
-itself lands in Phase 2.
 
 ## Installation
 
@@ -113,9 +109,11 @@ each deploy to pick up new code.
 
 ## Scheduler setup
 
-Laravel's scheduler drives the periodic SalesPlay sync (planned for every 15
-minutes once the `salesplay:sync` command lands in Phase 2). Point a single
-cron entry at the scheduler — do not add per-task cron entries:
+Laravel's scheduler drives the periodic SalesPlay sync — `salesplay:sync` is
+registered in `routes/console.php` to run every 15 minutes, with
+`withoutOverlapping()` and `onOneServer()` so a slow run never overlaps
+itself and multiple app servers don't double-sync. Point a single cron entry
+at the scheduler — do not add per-task cron entries:
 
 ```cron
 * * * * * cd /path/to/dynopos-cloud-report && php artisan schedule:run >> /dev/null 2>&1
@@ -139,9 +137,23 @@ SALESPLAY_API_VERSION=
 SALESPLAY_TIMEOUT=30
 ```
 
-These are read via `config/services.php` (`services.salesplay.*`) and will be
-consumed by `SalesPlayApiService` (Phase 2), so the endpoint can be changed
-later without touching application code.
+These are read via `config/services.php` (`services.salesplay.*`) and consumed
+by `App\Services\SalesPlay\SalesPlayApiClient`, so the endpoint can be changed
+later without touching any sync/business logic — see
+`App\Providers\SalesPlayServiceProvider`.
+
+**Until `SALESPLAY_BASE_URL` is set, the app automatically uses
+`App\Services\SalesPlay\SalesPlayMockApiClient`** instead of calling any real
+API. It generates realistic fake receipts/items/payments so the sync
+pipeline, dashboard, and reports can be built and demoed end-to-end before
+the real SalesPlay endpoint is confirmed. Once `SALESPLAY_BASE_URL` is
+configured, `SalesPlayServiceProvider` binds the real HTTP client instead —
+no other code changes needed.
+
+> The real client's request path/response shape
+> (`App\Services\SalesPlay\SalesPlayApiClient`) is a provisional best-guess,
+> clearly marked in the class docblock, since the real SalesPlay API docs
+> aren't available yet. Only that one class needs to change once they are.
 
 Each `salesplay_accounts` row has its own `api_token`, stored using Laravel's
 `encrypted` Eloquent cast (backed by `APP_KEY`) and hidden from all model
@@ -151,18 +163,21 @@ saved. Tokens are managed per-account in the admin panel (Phase 5), not in
 
 ## Running a manual sync
 
-*(Lands in Phase 2.)* Once implemented, a manual sync of all active SalesPlay
-accounts will be run with:
-
 ```bash
-php artisan salesplay:sync
+php artisan salesplay:sync           # dispatches one queued job per active account
+php artisan salesplay:sync --now     # runs all accounts synchronously, no queue worker needed
 ```
 
-The command will loop over every active `salesplay_accounts` row, fetch
-transactions since `last_synced_at` (with pagination), skip receipts that
-already exist (deduped by `salesplay_receipt_id`), and update
-`last_synced_at`. A failure syncing one account is logged and does not stop
-the others from syncing.
+The command loops over every active `salesplay_accounts` row (belonging to an
+active company), fetches transactions since `last_synced_at` (with
+pagination via `SalesPlaySyncService`), skips receipts that already exist
+(deduped by `salesplay_receipt_id`), creates their `receipt_items` and
+`payments`, and updates `last_synced_at` / `last_sync_status` /
+`last_sync_error`. A failure syncing one account is logged and does not stop
+the others from syncing — proven by
+`tests/Feature/SalesPlaySyncTest::test_command_isolates_failure_of_one_account_from_another`.
+A failed account simply retries from its last successful `last_synced_at` on
+the next run.
 
 ## Running tests
 
