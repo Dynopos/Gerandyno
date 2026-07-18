@@ -57,4 +57,44 @@ class LocaleTest extends TestCase
         $response->assertSessionHasErrors('locale');
         $this->assertNull(session('locale'));
     }
+
+    public function test_login_page_and_validation_errors_translate(): void
+    {
+        $user = User::factory()->create();
+
+        $ms = $this->get('/login');
+        $ms->assertSee('E-mel');
+        $ms->assertSee('Log Masuk');
+
+        $failedLogin = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'wrong-password',
+        ]);
+        $failedLogin->assertSessionHasErrors('email');
+        $this->assertSame(
+            'E-mel atau kata laluan tidak sepadan dengan rekod kami.',
+            session('errors')->get('email')[0]
+        );
+
+        $this->post('/locale', ['locale' => 'en']);
+
+        $en = $this->get('/login');
+        $en->assertSee('Email');
+        $en->assertSee('Log in');
+    }
+
+    public function test_profile_page_translates(): void
+    {
+        $user = User::factory()->create();
+
+        $ms = $this->actingAs($user)->get('/profile');
+        $ms->assertSee('Maklumat Profil');
+        $ms->assertSee('Padam Akaun');
+
+        $this->post('/locale', ['locale' => 'en']);
+
+        $en = $this->actingAs($user)->get('/profile');
+        $en->assertSee('Profile Information');
+        $en->assertSee('Delete Account');
+    }
 }
