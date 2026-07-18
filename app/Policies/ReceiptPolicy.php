@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Receipt;
+use App\Models\User;
+
+class ReceiptPolicy
+{
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->isAdmin() || $user->company_id !== null;
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Receipt $receipt): bool
+    {
+        return $user->isAdmin() || $user->company_id === $receipt->company_id;
+    }
+
+    /**
+     * Determine whether the user can create models.
+     *
+     * Receipts only ever arrive via SalesPlaySyncService, never user input.
+     */
+    public function create(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Receipt $receipt): bool
+    {
+        return false;
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Receipt $receipt): bool
+    {
+        return false;
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     */
+    public function restore(User $user, Receipt $receipt): bool
+    {
+        return false;
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete(User $user, Receipt $receipt): bool
+    {
+        return false;
+    }
+}
