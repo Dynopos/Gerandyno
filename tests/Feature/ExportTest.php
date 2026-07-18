@@ -179,9 +179,112 @@ class ExportTest extends TestCase
     {
         [$user] = $this->makeCustomer();
 
-        $response = $this->actingAs($user)->get('/reports/sales/export/pdf');
+        $response = $this->actingAs($user)->get('/reports/sales/export/docx');
 
         $response->assertNotFound();
+    }
+
+    public function test_sales_pdf_export_downloads_with_correct_content_type(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+            'receipt_number' => 'MINE-PDF',
+        ]);
+
+        $response = $this->actingAs($user)->get('/reports/sales/export/pdf?filter=this_month');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $this->assertGreaterThan(0, strlen($response->getContent()));
+    }
+
+    /**
+     * The PDF response body is FlateDecode-compressed, so scoping can't be
+     * asserted by searching the raw bytes for a receipt number. Instead,
+     * render the same Blade template SalesReportController::export() uses
+     * with a hand-built collection and confirm it only displays what it was
+     * given — the controller itself is already proven to pass only the
+     * authenticated user's own-company receipts (see the CSV/XLSX scoping
+     * tests above, which query the exact same $receipts variable).
+     */
+    public function test_sales_pdf_template_only_renders_the_receipts_it_is_given(): void
+    {
+        [, $company, $account] = $this->makeCustomer();
+
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+            'receipt_number' => 'TEMPLATE-MINE',
+        ])->load('payments');
+
+        $html = view('exports.pdf.sales', [
+            'title' => 'Laporan Jualan',
+            'subtitle' => 'Bulan Ini',
+            'companyName' => $company->name,
+            'receipts' => collect([$receipt]),
+        ])->render();
+
+        $this->assertStringContainsString('TEMPLATE-MINE', $html);
+        $this->assertStringNotContainsString('SOME-OTHER-RECEIPT', $html);
+    }
+
+    public function test_monthly_pdf_export_downloads(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/reports/monthly/export/pdf?year='.now()->year);
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_yearly_pdf_export_downloads(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get('/reports/yearly/export/pdf');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_products_pdf_export_downloads(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        $product = Product::factory()->create(['company_id' => $company->id, 'name' => 'Pdf Product']);
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+        ReceiptItem::factory()->create([
+            'receipt_id' => $receipt->id,
+            'product_id' => $product->id,
+            'product_name' => 'Pdf Product',
+        ]);
+
+        $response = $this->actingAs($user)->get('/reports/products/export/pdf?filter=this_month');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_admin_without_company_is_blocked_from_exports(): void

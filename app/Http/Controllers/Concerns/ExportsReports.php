@@ -3,19 +3,26 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Support\Reports\ExportFormat;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Support\Reports\ReportExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 trait ExportsReports
 {
     /**
-     * Streams $exportable to the browser as a CSV/XLSX download. The single
-     * chokepoint every report's export() action goes through, so a future
-     * PDF format only needs a new match arm here.
+     * Streams $export to the browser in the requested format. The single
+     * chokepoint every report's export() action goes through.
      */
-    private function downloadReport(FromCollection $exportable, ExportFormat $format, string $baseFilename): BinaryFileResponse
+    private function downloadReport(ReportExport $export, ExportFormat $format, string $baseFilename): Response
     {
-        return Excel::download($exportable, "{$baseFilename}.{$format->value}", $format->writerType());
+        return match ($format) {
+            ExportFormat::Csv, ExportFormat::Xlsx => Excel::download(
+                $export->spreadsheet, "{$baseFilename}.{$format->value}", $format->writerType()
+            ),
+            ExportFormat::Pdf => Pdf::loadView($export->pdfView, $export->pdfData)
+                ->setPaper('a4')
+                ->download("{$baseFilename}.pdf"),
+        };
     }
 }
