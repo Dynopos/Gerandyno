@@ -219,9 +219,10 @@ switches the active locale, stored in the session — see `SetLocale`
 middleware and `LocaleController`. Translation strings live in
 `lang/ms/app.php` and `lang/en/app.php` (one `app.*` key per string, kept in
 sync across both files); Carbon's locale follows the app locale automatically,
-so dates and month names translate too. Currently covers the dashboard,
-reports, and sidebar/nav — the Breeze auth/profile pages are not yet
-translated.
+so dates and month names translate too. Covers the dashboard, reports,
+sidebar/nav, and the Breeze login/password-reset/profile pages — including
+validation error messages (`lang/ms/validation.php`, `auth.php`,
+`passwords.php`, published via `php artisan lang:publish` and translated).
 
 ## Multi-tenancy & security notes
 
