@@ -58,13 +58,17 @@ class DashboardTest extends TestCase
         $response->assertDontSee('RM 999.00');
     }
 
-    public function test_admin_sees_placeholder_instead_of_a_companys_dashboard(): void
+    public function test_admin_sees_the_admin_dashboard_instead_of_a_companys_dashboard(): void
     {
         $admin = User::factory()->admin()->create();
+        $company = Company::factory()->create();
+        SalesplayAccount::factory()->create(['company_id' => $company->id]);
 
         $response = $this->actingAs($admin)->get('/dashboard');
 
         $response->assertOk();
-        $response->assertSee('Panel Admin akan datang');
+        $response->assertSee('Dashboard Admin');
+        $response->assertSee(route('admin.companies.index'), false);
+        $response->assertSee(route('admin.salesplay-accounts.index'), false);
     }
 }

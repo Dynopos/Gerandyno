@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Receipt;
+use App\Models\SalesplayAccount;
 use App\Support\Reports\SalesReportService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -19,7 +21,11 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->isAdmin()) {
-            return view('dashboard-admin');
+            return view('dashboard-admin', [
+                'companyCount' => Company::count(),
+                'activeCompanyCount' => Company::where('status', 'active')->count(),
+                'salesplayAccountCount' => SalesplayAccount::count(),
+            ]);
         }
 
         $today = CarbonImmutable::today();

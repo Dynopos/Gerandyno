@@ -70,6 +70,30 @@
             {{ __('app.nav.products') }}
         </x-sidebar-link>
     @endif
+
+    @if (Auth::user()->isAdmin())
+        <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('app.admin.nav.section') }}</p>
+
+        <x-sidebar-link :href="route('admin.companies.index')" :active="request()->routeIs('admin.companies.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M4 21V7l8-4 8 4v14" />
+                    <path d="M9 21v-6h6v6M9 11h.01M15 11h.01M9 15h.01M15 15h.01" />
+                </svg>
+            </x-slot>
+            {{ __('app.admin.nav.companies') }}
+        </x-sidebar-link>
+
+        <x-sidebar-link :href="route('admin.salesplay-accounts.index')" :active="request()->routeIs('admin.salesplay-accounts.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M3 9h18M8 13h.01M8 17h.01" />
+                </svg>
+            </x-slot>
+            {{ __('app.admin.nav.salesplay_accounts') }}
+        </x-sidebar-link>
+    @endif
 </nav>
 
 {{-- User / logout --}}

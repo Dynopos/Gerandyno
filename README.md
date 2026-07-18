@@ -29,7 +29,7 @@ This repository is being built in phases. Current status:
       command, scheduler.
 - [x] **Phase 3** — Dashboard and reports.
 - [x] **Phase 4** — CSV/Excel export.
-- [ ] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
+- [x] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
 
 ## Installation
 
@@ -158,8 +158,23 @@ no other code changes needed.
 Each `salesplay_accounts` row has its own `api_token`, stored using Laravel's
 `encrypted` Eloquent cast (backed by `APP_KEY`) and hidden from all model
 serialization — the token is never returned in any API/JSON response once
-saved. Tokens are managed per-account in the admin panel (Phase 5), not in
-`.env`.
+saved. Tokens are managed per-account in the admin panel, not in `.env`.
+
+## Admin panel
+
+DynoPOS admins (`role=admin`, no `company_id`) get an **Admin** section in the
+sidebar with two CRUD screens, gated by the `admin` route middleware
+(`App\Http\Middleware\EnsureUserIsAdmin`) and `CompanyPolicy` /
+`SalesplayAccountPolicy`:
+
+- `/admin/companies` — create/edit/deactivate/delete customer companies.
+  Deleting a company cascades to all of its users, SalesPlay accounts,
+  products, and receipts.
+- `/admin/salesplay-accounts` — provision SalesPlay accounts for any company
+  and manage their API tokens. The token field is write-only: it's never
+  redisplayed after saving (the model hides it from serialization and
+  encrypts it at rest), and leaving it blank on the edit form keeps the
+  existing token unchanged.
 
 ## Running a manual sync
 
