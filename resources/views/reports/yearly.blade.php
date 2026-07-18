@@ -1,6 +1,10 @@
 <x-app-layout>
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <x-page-header :title="__('app.reports.yearly.title')" :subtitle="__('app.reports.yearly.subtitle')" />
+        <x-page-header :title="__('app.reports.yearly.title')" :subtitle="__('app.reports.yearly.subtitle')">
+            <x-slot name="actions">
+                <x-export-buttons export-route="reports.yearly.export" />
+            </x-slot>
+        </x-page-header>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <x-stat-card :label="__('app.reports.yearly.grand_total')" :value="\App\Support\Money::format($grandTotal)" color="red">

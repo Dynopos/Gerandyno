@@ -12,6 +12,8 @@
                         </option>
                     @endforeach
                 </select>
+
+                <x-export-buttons export-route="reports.monthly.export" :params="['year' => $year]" />
             </x-slot>
         </x-page-header>
 

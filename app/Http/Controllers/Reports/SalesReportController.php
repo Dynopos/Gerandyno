@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\SalesExport;
+use App\Http\Controllers\Concerns\ExportsReports;
 use App\Http\Controllers\Controller;
 use App\Models\Receipt;
+use App\Support\Reports\ExportFormat;
 use App\Support\Reports\ReportPeriodResolver;
 use App\Support\Reports\SalesReportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SalesReportController extends Controller
 {
+    use ExportsReports;
+
     public function __construct(
         private readonly SalesReportService $reports,
     ) {}
@@ -43,5 +50,19 @@ class SalesReportController extends Controller
         return view('reports.sales.show', [
             'receipt' => $receipt,
         ]);
+    }
+
+    public function export(Request $request, ExportFormat $format): BinaryFileResponse
+    {
+        $period = ReportPeriodResolver::resolve($request);
+
+        $receipts = Receipt::with('payments')
+            ->whereBetween('transaction_date', [$period->start, $period->end])
+            ->orderByDesc('transaction_date')
+            ->get();
+
+        $filename = 'laporan-jualan-'.Str::slug($period->label).'-'.now()->format('Y-m-d');
+
+        return $this->downloadReport(new SalesExport($receipts), $format, $filename);
     }
 }
