@@ -1,10 +1,21 @@
-@props(['label', 'value', 'delta' => null, 'deltaLabel' => null])
+@props(['label', 'value', 'delta' => null, 'deltaLabel' => null, 'color' => 'red'])
+
+@php
+    $iconColors = [
+        'red' => 'bg-red-50 text-red-600',
+        'orange' => 'bg-orange-50 text-orange-600',
+        'blue' => 'bg-blue-50 text-blue-600',
+        'teal' => 'bg-teal-50 text-teal-600',
+        'pink' => 'bg-pink-50 text-pink-600',
+    ];
+    $iconClasses = $iconColors[$color] ?? $iconColors['red'];
+@endphp
 
 <div {{ $attributes->merge(['class' => 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm']) }}>
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-            <p class="text-sm font-medium text-slate-500">{{ $label }}</p>
-            <p class="mt-2 truncate text-2xl font-semibold text-slate-900">{{ $value }}</p>
+            <p class="truncate text-sm font-medium text-slate-500">{{ $label }}</p>
+            <p class="mt-2 whitespace-nowrap text-xl font-semibold leading-tight text-slate-900">{{ $value }}</p>
 
             @if (! is_null($delta))
                 <p @class([
@@ -28,7 +39,7 @@
         </div>
 
         @isset($icon)
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {{ $iconClasses }}">
                 {{ $icon }}
             </div>
         @endisset

@@ -2,23 +2,24 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 
         {{-- Welcome banner --}}
-        <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 px-6 py-8 text-white shadow-sm sm:px-8">
-            <p class="text-sm font-medium text-indigo-100">{{ now()->translatedFormat('l, d F Y') }}</p>
+        <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-red-600 to-orange-500 px-6 py-8 text-white shadow-sm sm:px-8">
+            <p class="text-sm font-medium text-red-100">{{ now()->translatedFormat('l, d F Y') }}</p>
             <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
-                {{ __('Selamat kembali') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
+                {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
             </h1>
             @if (auth()->user()->company)
-                <p class="mt-2 text-sm text-indigo-100">{{ auth()->user()->company->name }}</p>
+                <p class="mt-2 text-sm text-red-100">{{ auth()->user()->company->name }}</p>
             @endif
         </div>
 
         {{-- Stat cards --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <x-stat-card
-                label="Jualan Hari Ini"
+                :label="__('app.dashboard.today_sales')"
                 :value="\App\Support\Money::format($todaySales)"
                 :delta="$todayDelta"
-                deltaLabel="berbanding semalam"
+                :deltaLabel="__('app.dashboard.vs_yesterday')"
+                color="red"
             >
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
@@ -29,7 +30,7 @@
                 </x-slot>
             </x-stat-card>
 
-            <x-stat-card label="Jualan Bulan Ini" :value="\App\Support\Money::format($monthSales)">
+            <x-stat-card :label="__('app.dashboard.this_month_sales')" :value="\App\Support\Money::format($monthSales)" color="blue">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="3.5" y="5" width="17" height="16" rx="2" />
@@ -38,7 +39,7 @@
                 </x-slot>
             </x-stat-card>
 
-            <x-stat-card label="Jualan Tahun Ini" :value="\App\Support\Money::format($yearSales)">
+            <x-stat-card :label="__('app.dashboard.this_year_sales')" :value="\App\Support\Money::format($yearSales)" color="teal">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="4" y="12" width="3.5" height="7" rx="1" />
@@ -48,7 +49,7 @@
                 </x-slot>
             </x-stat-card>
 
-            <x-stat-card label="Transaksi Hari Ini" :value="number_format($todayTransactions)">
+            <x-stat-card :label="__('app.dashboard.today_transactions')" :value="number_format($todayTransactions)" color="pink">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" />
@@ -61,8 +62,8 @@
         {{-- Charts --}}
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">Jualan Harian &mdash; {{ now()->translatedFormat('F Y') }}</h2>
-                <p class="text-xs text-slate-500">Jumlah jualan mengikut hari, bulan semasa</p>
+                <h2 class="text-sm font-semibold text-slate-900">{!! __('app.dashboard.daily_sales_title', ['month' => now()->translatedFormat('F Y')]) !!}</h2>
+                <p class="text-xs text-slate-500">{{ __('app.dashboard.daily_sales_subtitle') }}</p>
                 <div class="mt-4 h-64">
                     <canvas
                         data-chart="line"
@@ -73,8 +74,8 @@
             </div>
 
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">Jualan Bulanan &mdash; {{ now()->year }}</h2>
-                <p class="text-xs text-slate-500">Jumlah jualan mengikut bulan, tahun semasa</p>
+                <h2 class="text-sm font-semibold text-slate-900">{!! __('app.dashboard.monthly_sales_title', ['year' => now()->year]) !!}</h2>
+                <p class="text-xs text-slate-500">{{ __('app.dashboard.monthly_sales_subtitle') }}</p>
                 <div class="mt-4 h-64">
                     <canvas
                         data-chart="bar"
@@ -85,39 +86,62 @@
             </div>
         </div>
 
-        {{-- Recent receipts --}}
-        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                <h2 class="text-sm font-semibold text-slate-900">Resit Terkini</h2>
-                <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-                    Lihat Semua &rarr;
-                </a>
+        {{-- Recent receipts + top categories --}}
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
+                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                    <h2 class="text-sm font-semibold text-slate-900">{{ __('app.dashboard.recent_receipts') }}</h2>
+                    <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-red-600 hover:text-red-700">
+                        {!! __('app.dashboard.view_all') !!}
+                    </a>
+                </div>
+
+                @if ($recentReceipts->isEmpty())
+                    <p class="px-5 py-10 text-center text-sm text-slate-500">{{ __('app.dashboard.no_receipts') }}</p>
+                @else
+                    <div class="divide-y divide-slate-100">
+                        @foreach ($recentReceipts as $receipt)
+                            <a href="{{ route('reports.sales.show', $receipt) }}" class="flex items-center justify-between px-5 py-3 transition hover:bg-slate-50">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-slate-900">
+                                        {{ $receipt->receipt_number ?? '#'.$receipt->id }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        {{ $receipt->transaction_date->translatedFormat('d M Y, h:i A') }}
+                                    </p>
+                                </div>
+                                <div class="shrink-0 text-right">
+                                    <x-money :amount="$receipt->total" class="text-sm font-semibold text-slate-900" />
+                                    <p class="text-xs text-slate-500">
+                                        {{ $receipt->payments->pluck('payment_method')->map(fn ($m) => ucfirst($m))->implode(', ') ?: '-' }}
+                                    </p>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
-            @if ($recentReceipts->isEmpty())
-                <p class="px-5 py-10 text-center text-sm text-slate-500">Tiada resit lagi.</p>
-            @else
-                <div class="divide-y divide-slate-100">
-                    @foreach ($recentReceipts as $receipt)
-                        <a href="{{ route('reports.sales.show', $receipt) }}" class="flex items-center justify-between px-5 py-3 transition hover:bg-slate-50">
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-medium text-slate-900">
-                                    {{ $receipt->receipt_number ?? '#'.$receipt->id }}
-                                </p>
-                                <p class="text-xs text-slate-500">
-                                    {{ $receipt->transaction_date->translatedFormat('d M Y, h:i A') }}
-                                </p>
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="text-sm font-semibold text-slate-900">{{ __('app.dashboard.top_categories') }}</h2>
+                <p class="text-xs text-slate-500">{{ __('app.dashboard.this_month') }}</p>
+
+                <div class="mt-4 space-y-4">
+                    @forelse ($topCategories as $category)
+                        <div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="truncate font-medium text-slate-700">{{ $category['category'] }}</span>
+                                <span class="shrink-0 text-slate-500">{{ number_format($category['percentage'], 0) }}%</span>
                             </div>
-                            <div class="shrink-0 text-right">
-                                <x-money :amount="$receipt->total" class="text-sm font-semibold text-slate-900" />
-                                <p class="text-xs text-slate-500">
-                                    {{ $receipt->payments->pluck('payment_method')->map(fn ($m) => ucfirst($m))->implode(', ') ?: '-' }}
-                                </p>
+                            <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-full rounded-full bg-gradient-to-r from-red-600 to-orange-500" style="width: {{ $category['percentage'] }}%"></div>
                             </div>
-                        </a>
-                    @endforeach
+                        </div>
+                    @empty
+                        <p class="text-sm text-slate-500">{{ __('app.dashboard.no_category_data') }}</p>
+                    @endforelse
                 </div>
-            @endif
+            </div>
         </div>
     </div>
 </x-app-layout>

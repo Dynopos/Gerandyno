@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('reports.sales.index') }}" class="font-medium text-indigo-600 hover:text-indigo-700">&larr; Laporan Jualan</a>
+            <a href="{{ route('reports.sales.index') }}" class="font-medium text-red-600 hover:text-red-700">{!! __('app.reports.sales.back_to_list') !!}</a>
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -25,7 +25,7 @@
             </div>
 
             <div class="px-6 py-5">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Item</h2>
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.receipt.item') }}</h2>
 
                 <div class="mt-3 divide-y divide-slate-100">
                     @foreach ($receipt->items as $item)
@@ -44,27 +44,27 @@
 
             <div class="space-y-2 border-t border-slate-100 bg-slate-50 px-6 py-5">
                 <div class="flex items-center justify-between text-sm text-slate-600">
-                    <span>Subtotal</span>
+                    <span>{{ __('app.receipt.subtotal') }}</span>
                     <x-money :amount="$receipt->subtotal" />
                 </div>
                 @if ((float) $receipt->discount > 0)
                     <div class="flex items-center justify-between text-sm text-slate-600">
-                        <span>Diskaun</span>
+                        <span>{{ __('app.receipt.discount') }}</span>
                         <span>-<x-money :amount="$receipt->discount" /></span>
                     </div>
                 @endif
                 <div class="flex items-center justify-between text-sm text-slate-600">
-                    <span>Cukai</span>
+                    <span>{{ __('app.receipt.tax') }}</span>
                     <x-money :amount="$receipt->tax" />
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-200 pt-2 text-base font-semibold text-slate-900">
-                    <span>Jumlah</span>
+                    <span>{{ __('app.receipt.total') }}</span>
                     <x-money :amount="$receipt->total" />
                 </div>
             </div>
 
             <div class="border-t border-slate-100 px-6 py-5">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Bayaran</h2>
+                <h2 class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.receipt.payment') }}</h2>
                 <div class="mt-3 space-y-2">
                     @foreach ($receipt->payments as $payment)
                         <div class="flex items-center justify-between text-sm">

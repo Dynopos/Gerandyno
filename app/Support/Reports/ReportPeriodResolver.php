@@ -21,11 +21,11 @@ final class ReportPeriodResolver
     public static function options(): array
     {
         return [
-            'today' => 'Hari Ini',
-            'yesterday' => 'Semalam',
-            'this_month' => 'Bulan Ini',
-            'last_month' => 'Bulan Lepas',
-            'custom' => 'Julat Tarikh',
+            'today' => __('app.filters.today'),
+            'yesterday' => __('app.filters.yesterday'),
+            'this_month' => __('app.filters.this_month'),
+            'last_month' => __('app.filters.last_month'),
+            'custom' => __('app.filters.custom'),
         ];
     }
 
@@ -35,13 +35,13 @@ final class ReportPeriodResolver
         $today = CarbonImmutable::today();
 
         return match ($filter) {
-            'today' => new ReportPeriod('today', 'Hari Ini', $today->startOfDay(), $today->endOfDay()),
+            'today' => new ReportPeriod('today', __('app.filters.today'), $today->startOfDay(), $today->endOfDay()),
             'yesterday' => new ReportPeriod(
-                'yesterday', 'Semalam', $today->subDay()->startOfDay(), $today->subDay()->endOfDay()
+                'yesterday', __('app.filters.yesterday'), $today->subDay()->startOfDay(), $today->subDay()->endOfDay()
             ),
-            'last_month' => self::monthPeriod($today->subMonthNoOverflow(), 'last_month', 'Bulan Lepas'),
+            'last_month' => self::monthPeriod($today->subMonthNoOverflow(), 'last_month', __('app.filters.last_month')),
             'custom' => self::customPeriod($request, $today),
-            default => self::monthPeriod($today, 'this_month', 'Bulan Ini'),
+            default => self::monthPeriod($today, 'this_month', __('app.filters.this_month')),
         };
     }
 
@@ -56,12 +56,12 @@ final class ReportPeriodResolver
         $to = self::parseDate($request->query('to'));
 
         if (! $from || ! $to || $from->greaterThan($to)) {
-            return self::monthPeriod($today, self::DEFAULT_FILTER, 'Bulan Ini');
+            return self::monthPeriod($today, self::DEFAULT_FILTER, __('app.filters.this_month'));
         }
 
         $label = $from->isSameDay($to)
-            ? $from->format('d M Y')
-            : $from->format('d M Y').' - '.$to->format('d M Y');
+            ? $from->translatedFormat('d M Y')
+            : $from->translatedFormat('d M Y').' - '.$to->translatedFormat('d M Y');
 
         return new ReportPeriod('custom', $label, $from->startOfDay(), $to->endOfDay());
     }

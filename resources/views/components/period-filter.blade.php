@@ -11,7 +11,7 @@
                 href="{{ route($routeName, ['filter' => $key]) }}"
                 @class([
                     'rounded-lg px-3 py-1.5 text-sm font-medium transition',
-                    'bg-indigo-600 text-white shadow-sm' => $period->key === $key,
+                    'bg-red-600 text-white shadow-sm' => $period->key === $key,
                     'text-slate-600 hover:bg-slate-100' => $period->key !== $key,
                 ])
             >
@@ -26,17 +26,17 @@
             type="date"
             name="from"
             value="{{ $period->key === 'custom' ? $period->start->format('Y-m-d') : '' }}"
-            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-red-500 focus:ring-red-500"
         >
         <span class="text-slate-400">&ndash;</span>
         <input
             type="date"
             name="to"
             value="{{ $period->key === 'custom' ? $period->end->format('Y-m-d') : '' }}"
-            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500"
+            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-red-500 focus:ring-red-500"
         >
-        <button type="submit" class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
-            Guna
+        <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700">
+            {{ __('app.filters.apply') }}
         </button>
     </form>
 </div>

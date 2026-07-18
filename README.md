@@ -208,6 +208,20 @@ MySQL setup is required to run the test suite.
   sense for a customer user scoped to one tenant.
 - Aggregation logic lives in `App\Support\Reports\SalesReportService`; date
   filter parsing in `App\Support\Reports\ReportPeriodResolver`.
+- The authenticated UI uses a fixed dark sidebar (`resources/views/layouts/
+  sidebar.blade.php`) with a red/orange brand accent, off-canvas on mobile.
+
+## Language (Bahasa Melayu / English)
+
+The app defaults to Bahasa Melayu (`APP_LOCALE=ms` in `.env`) with English as
+the fallback locale. A BM/EN toggle in the top bar (and on the login page)
+switches the active locale, stored in the session — see `SetLocale`
+middleware and `LocaleController`. Translation strings live in
+`lang/ms/app.php` and `lang/en/app.php` (one `app.*` key per string, kept in
+sync across both files); Carbon's locale follows the app locale automatically,
+so dates and month names translate too. Currently covers the dashboard,
+reports, and sidebar/nav — the Breeze auth/profile pages are not yet
+translated.
 
 ## Multi-tenancy & security notes
 

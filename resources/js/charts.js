@@ -23,7 +23,8 @@ Chart.register(
     Tooltip,
 );
 
-const SERIES_COLOR = '#4f46e5'; // indigo-600 — matches the rest of the app's branding
+const SERIES_COLOR = '#dc2626'; // red-600 — matches the rest of the app's branding
+const SERIES_FILL = 'rgba(220, 38, 38, 0.08)'; // red-600 wash, for line/area charts
 const MUTED_TEXT = '#94a3b8'; // slate-400
 const GRIDLINE = '#e2e8f0'; // slate-200
 
@@ -52,7 +53,7 @@ function buildChart(canvas) {
             datasets: [
                 {
                     data: values,
-                    backgroundColor: isLine ? 'rgba(79, 70, 229, 0.08)' : SERIES_COLOR,
+                    backgroundColor: isLine ? SERIES_FILL : SERIES_COLOR,
                     borderColor: SERIES_COLOR,
                     borderWidth: isLine ? 2 : 0,
                     borderRadius: isLine ? 0 : { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
