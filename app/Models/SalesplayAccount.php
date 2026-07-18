@@ -9,7 +9,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['company_id', 'shop_name', 'salesplay_shop_id', 'api_token', 'status'])]
+#[Fillable([
+    'company_id',
+    'shop_name',
+    'salesplay_shop_id',
+    'api_token',
+    'status',
+    'last_synced_at',
+    'last_sync_status',
+    'last_sync_error',
+])]
 #[Hidden(['api_token'])]
 class SalesplayAccount extends Model
 {
