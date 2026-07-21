@@ -19,8 +19,10 @@ use Illuminate\Support\Facades\DB;
  *
  * Sync is incremental (uses salesplay_accounts.last_synced_at as the "since"
  * cursor) and idempotent (skips any receipt whose salesplay_receipt_id
- * already exists), so it's always safe to re-run — including retrying after
- * a failure, which simply resumes from the last successfully synced point.
+ * already exists for that account — receipt numbers are only unique per
+ * shop, not globally), so it's always safe to re-run — including retrying
+ * after a failure, which simply resumes from the last successfully synced
+ * point.
  */
 class SalesPlaySyncService
 {
@@ -85,7 +87,10 @@ class SalesPlaySyncService
      */
     private function storeReceipt(SalesplayAccount $account, SalesPlayReceiptData $data): bool
     {
-        if (Receipt::withoutGlobalScopes()->where('salesplay_receipt_id', $data->salesplayReceiptId)->exists()) {
+        if (Receipt::withoutGlobalScopes()
+            ->where('salesplay_account_id', $account->id)
+            ->where('salesplay_receipt_id', $data->salesplayReceiptId)
+            ->exists()) {
             return false;
         }
 
