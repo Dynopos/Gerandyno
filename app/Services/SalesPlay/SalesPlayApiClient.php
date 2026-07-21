@@ -49,7 +49,10 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
 
         try {
             $response = Http::baseUrl(rtrim($this->baseUrl, '/'))
-                ->withHeaders(['Token' => "Bearer {$apiToken}"])
+                ->withHeaders([
+                    'Token' => "Bearer {$apiToken}",
+                    'User-Agent' => 'DynoPOS-CloudReport/1.0',
+                ])
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->send('GET', '/receipts', ['json' => array_filter([
