@@ -12,7 +12,7 @@ use App\Http\Controllers\Reports\YearlyReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
