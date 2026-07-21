@@ -40,9 +40,10 @@ return [
     | SalesPlay API
     |--------------------------------------------------------------------------
     |
-    | base_url and api_version are intentionally left blank until the real
-    | SalesPlay API endpoint is confirmed. SalesPlayApiClient reads these
-    | values so the endpoint can be changed later without touching any code.
+    | base_url is intentionally left blank by default so SalesPlayServiceProvider
+    | falls back to the mock client until this is configured. The real
+    | SalesPlay Developer API lives at https://api.salesplaypos.com/v1.0
+    | (base_url already includes the version — no separate version segment).
     | Per-account API tokens live in salesplay_accounts.api_token (encrypted),
     | never here.
     |
@@ -50,7 +51,6 @@ return [
 
     'salesplay' => [
         'base_url' => env('SALESPLAY_BASE_URL'),
-        'api_version' => env('SALESPLAY_API_VERSION'),
         'timeout' => env('SALESPLAY_TIMEOUT', 30),
     ],
 

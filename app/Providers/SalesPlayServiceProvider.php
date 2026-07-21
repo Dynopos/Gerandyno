@@ -28,7 +28,6 @@ class SalesPlayServiceProvider extends ServiceProvider
 
             return new SalesPlayApiClient(
                 baseUrl: $config['base_url'],
-                apiVersion: $config['api_version'] ?? 'v1',
                 timeout: (int) ($config['timeout'] ?? 30),
             );
         });
