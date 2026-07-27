@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'company_id',
     'salesplay_account_id',
+    'customer_id',
     'salesplay_receipt_id',
     'receipt_number',
     'transaction_date',
@@ -41,6 +42,11 @@ class Receipt extends Model
     public function salesplayAccount(): BelongsTo
     {
         return $this->belongsTo(SalesplayAccount::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function items(): HasMany

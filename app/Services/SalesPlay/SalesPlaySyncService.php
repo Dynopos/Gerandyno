@@ -2,12 +2,14 @@
 
 namespace App\Services\SalesPlay;
 
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
+use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlaySyncResult;
@@ -95,9 +97,12 @@ class SalesPlaySyncService
         }
 
         DB::transaction(function () use ($account, $data): void {
+            $customer = $data->customer ? $this->resolveCustomer($account->company_id, $data->customer) : null;
+
             $receipt = Receipt::create([
                 'company_id' => $account->company_id,
                 'salesplay_account_id' => $account->id,
+                'customer_id' => $customer?->id,
                 'salesplay_receipt_id' => $data->salesplayReceiptId,
                 'receipt_number' => $data->receiptNumber,
                 'transaction_date' => $data->transactionDate,
@@ -133,6 +138,25 @@ class SalesPlaySyncService
         });
 
         return true;
+    }
+
+    private function resolveCustomer(int $companyId, SalesPlayCustomerData $data): Customer
+    {
+        return Customer::withoutGlobalScopes()->updateOrCreate(
+            [
+                'company_id' => $companyId,
+                'salesplay_customer_id' => $data->salesplayCustomerId,
+            ],
+            [
+                'name' => $data->name,
+                'email' => $data->email,
+                'phone' => $data->phone,
+                'address' => $data->address,
+                'city' => $data->city,
+                'region' => $data->region,
+                'postal_code' => $data->postalCode,
+            ]
+        );
     }
 
     private function resolveProduct(int $companyId, SalesPlayReceiptItemData $item): ?Product

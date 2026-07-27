@@ -9,6 +9,7 @@ use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
+use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
@@ -34,6 +35,16 @@ class SalesPlaySyncTest extends TestCase
             tax: 6,
             total: 106,
             paymentStatus: 'paid',
+            customer: new SalesPlayCustomerData(
+                salesplayCustomerId: 'cust-1',
+                name: 'Ali Bin Abu',
+                email: 'ali@example.com',
+                phone: '012-3456789',
+                address: null,
+                city: null,
+                region: null,
+                postalCode: null,
+            ),
             items: [
                 new SalesPlayReceiptItemData(
                     salesplayProductId: 'p-1',

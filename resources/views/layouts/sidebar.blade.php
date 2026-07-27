@@ -69,6 +69,17 @@
             </x-slot>
             {{ __('app.nav.products') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('reports.customers.index')" :active="request()->routeIs('reports.customers.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <circle cx="9" cy="8" r="3.25" />
+                    <path d="M2.75 20a6.25 6.25 0 0112.5 0" />
+                    <path d="M16.5 8.5a3 3 0 010 5.75M20.5 20a5.5 5.5 0 00-4-5.3" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.customers') }}
+        </x-sidebar-link>
     @endif
 
     @if (Auth::user()->isAdmin())
