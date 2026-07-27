@@ -34,6 +34,13 @@ use Throwable;
  */
 class SalesPlayApiClient implements SalesPlayApiClientInterface
 {
+    /**
+     * Keeps each page's query cheap on SalesPlay's end — a full-history
+     * first sync with no limit risked the server timing out trying to
+     * return decades of receipts in one response.
+     */
+    private const PAGE_SIZE = 100;
+
     public function __construct(
         private readonly string $baseUrl,
         private readonly int $timeout,
@@ -63,6 +70,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
                     'shop_id' => $shopId,
                     'created_at_min' => $since->format('Y-m-d H:i:s'),
                     'created_at_max' => now()->format('Y-m-d H:i:s'),
+                    'limit' => self::PAGE_SIZE,
                     'cursor' => $cursor,
                 ])]);
         } catch (Throwable $e) {
