@@ -102,6 +102,17 @@
             </x-slot>
             {{ __('app.nav.expenses') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('reports.pnl')" :active="request()->routeIs('reports.pnl')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M4 15l6-6 4 4 6-6" />
+                    <path d="M14 6h6v6" />
+                    <path d="M4 20h16" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.pnl') }}
+        </x-sidebar-link>
     @endif
 
     @if (Auth::user()->isAdmin())
