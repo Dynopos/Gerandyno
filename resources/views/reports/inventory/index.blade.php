@@ -2,7 +2,14 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.reports.inventory.title')" :subtitle="__('app.reports.inventory.subtitle')" />
 
+        <x-period-filter :period="$period" route-name="reports.inventory.index" />
+
         <form method="GET" action="{{ route('reports.inventory.index') }}" class="max-w-sm">
+            <input type="hidden" name="filter" value="{{ $period->key }}">
+            @if ($period->key === 'custom')
+                <input type="hidden" name="from" value="{{ $period->start->format('Y-m-d') }}">
+                <input type="hidden" name="to" value="{{ $period->end->format('Y-m-d') }}">
+            @endif
             <input
                 type="search"
                 name="q"
@@ -31,10 +38,13 @@
                         <tbody class="divide-y divide-slate-100">
                             @foreach ($products as $product)
                                 @php
-                                    $stockIn = (float) ($product->stock_in_items_sum_quantity ?? 0);
-                                    $stockOut = (float) ($product->receipt_items_sum_quantity ?? 0);
-                                    $balance = $product->stock_on_hand;
-                                    $openingBalance = $balance !== null ? $balance - $stockIn + $stockOut : null;
+                                    $stockIn = (float) ($product->stock_in ?? 0);
+                                    $stockOut = (float) ($product->stock_out ?? 0);
+                                    $stockInAfterRange = (float) ($product->stock_in_after_range ?? 0);
+                                    $stockOutAfterRange = (float) ($product->stock_out_after_range ?? 0);
+                                    $currentBalance = $product->stock_on_hand;
+                                    $closingBalance = $currentBalance !== null ? $currentBalance - $stockInAfterRange + $stockOutAfterRange : null;
+                                    $openingBalance = $closingBalance !== null ? $closingBalance - $stockIn + $stockOut : null;
                                 @endphp
                                 <tr>
                                     <td class="px-5 py-3 text-sm font-medium text-slate-900">{{ $product->name }}</td>
@@ -49,7 +59,7 @@
                                         {{ rtrim(rtrim(number_format($stockOut, 2), '0'), '.') }}
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm font-semibold text-slate-900">
-                                        {{ $balance !== null ? rtrim(rtrim(number_format($balance, 2), '0'), '.') : '-' }}
+                                        {{ $closingBalance !== null ? rtrim(rtrim(number_format($closingBalance, 2), '0'), '.') : '-' }}
                                     </td>
                                 </tr>
                             @endforeach
