@@ -52,9 +52,13 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
                 ->withHeaders([
                     'Token' => "Bearer {$apiToken}",
                     'User-Agent' => 'DynoPOS-CloudReport/1.0',
+                    // SalesPlay's server uses Apache content negotiation and only has a
+                    // text/html-typed variant registered; asking strictly for
+                    // application/json (the Laravel default) makes Apache itself
+                    // reject the request with a 406 before the app ever sees it.
+                    'Accept' => '*/*',
                 ])
                 ->timeout($this->timeout)
-                ->acceptJson()
                 ->send('GET', '/receipts', ['json' => array_filter([
                     'shop_id' => $shopId,
                     'created_at_min' => $since->format('Y-m-d H:i:s'),
