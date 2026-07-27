@@ -134,6 +134,24 @@ class SalesPlayApiClientTest extends TestCase
         });
     }
 
+    public function test_it_sends_date_filters_in_malaysia_time_not_utc(): void
+    {
+        Http::fake([
+            'api.salesplaypos.com/*' => Http::response(['receipts' => [], 'cursor' => null], 200),
+        ]);
+
+        $client = new SalesPlayApiClient(baseUrl: 'https://api.salesplaypos.com/v1.0', timeout: 30);
+
+        // Midnight UTC is already the next day in Malaysia (UTC+8).
+        $sinceUtc = Carbon::parse('2026-07-27 00:00:00', 'UTC');
+
+        $client->fetchReceipts(shopId: 'shop-abc', apiToken: 'token', since: $sinceUtc, cursor: null);
+
+        Http::assertSent(function ($request) {
+            return $request['created_at_min'] === '2026-07-27 08:00:00';
+        });
+    }
+
     public function test_it_stops_paginating_when_a_page_comes_back_empty(): void
     {
         Http::fake([
