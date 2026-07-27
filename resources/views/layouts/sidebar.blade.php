@@ -80,6 +80,28 @@
             </x-slot>
             {{ __('app.nav.customers') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('reports.inventory.stock')" :active="request()->routeIs('reports.inventory.stock')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M3.5 7.5L12 3l8.5 4.5-8.5 4.5-8.5-4.5z" />
+                    <path d="M3.5 7.5V16l8.5 4.5 8.5-4.5V7.5" />
+                    <path d="M12 12v8.5" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.inventory_stock') }}
+        </x-sidebar-link>
+
+        <x-sidebar-link :href="route('reports.inventory.stock-ins.index')" :active="request()->routeIs('reports.inventory.stock-ins.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M12 4v12" />
+                    <path d="M7 11l5 5 5-5" />
+                    <path d="M4 19h16" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.inventory_stock_ins') }}
+        </x-sidebar-link>
     @endif
 
     @if (Auth::user()->isAdmin())

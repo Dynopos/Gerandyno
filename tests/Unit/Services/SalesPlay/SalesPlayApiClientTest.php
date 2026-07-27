@@ -176,4 +176,111 @@ class SalesPlayApiClientTest extends TestCase
         (new SalesPlayApiClient(baseUrl: 'https://api.salesplaypos.com/v1.0', timeout: 30))
             ->fetchReceipts(shopId: 'shop-abc', apiToken: 'bad-token', since: null, cursor: null);
     }
+
+    /**
+     * Fixture is a real response captured from the live SalesPlay Developer
+     * API (https://api.salesplaypos.com/v1.0/inventory) during integration
+     * testing.
+     */
+    public function test_it_maps_a_real_salesplay_inventory_response_into_stock_level_dtos(): void
+    {
+        Http::fake([
+            'api.salesplaypos.com/*' => Http::response([
+                'inventory_levels' => [
+                    [
+                        'product_id' => 'TE5yRUJUS1ZSRms0UEhqamd3eDNGUT09',
+                        'shop_id' => 'shop-abc',
+                        'product_code' => '10005',
+                        'in_stock' => 10,
+                    ],
+                ],
+                'cursor' => 'abc123',
+            ], 200),
+        ]);
+
+        $client = new SalesPlayApiClient(baseUrl: 'https://api.salesplaypos.com/v1.0', timeout: 30);
+
+        $page = $client->fetchStockLevels(shopId: 'shop-abc', apiToken: 'test-token', cursor: null);
+
+        $this->assertCount(1, $page->items);
+        $this->assertSame('TE5yRUJUS1ZSRms0UEhqamd3eDNGUT09', $page->items[0]->salesplayProductId);
+        $this->assertSame('10005', $page->items[0]->productCode);
+        $this->assertSame(10.0, $page->items[0]->quantityOnHand);
+        $this->assertSame('abc123', $page->nextCursor);
+
+        Http::assertSent(function ($request) {
+            return $request->hasHeader('Token', 'Bearer test-token')
+                && $request->url() === 'https://api.salesplaypos.com/v1.0/inventory'
+                && $request['shop_id'] === 'shop-abc';
+        });
+    }
+
+    /**
+     * The real /grn endpoint has only ever returned an empty grn_list during
+     * development (the test shop has no manual stock-in entries) — confirms
+     * the empty-envelope shape is handled without crashing.
+     */
+    public function test_it_maps_an_empty_grn_response_into_an_empty_stock_in_page(): void
+    {
+        Http::fake([
+            'api.salesplaypos.com/*' => Http::response(['grn_list' => [], 'cursor' => 'MT@sMT@='], 200),
+        ]);
+
+        $client = new SalesPlayApiClient(baseUrl: 'https://api.salesplaypos.com/v1.0', timeout: 30);
+
+        $page = $client->fetchStockIns(shopId: 'shop-abc', apiToken: 'test-token', since: null, cursor: null);
+
+        $this->assertSame([], $page->items);
+        $this->assertFalse($page->hasMore);
+    }
+
+    /**
+     * GRN item field names are unconfirmed (never observed with real data),
+     * so this exercises the best-guess mapping against SalesPlay's "create
+     * GRN" request body shape to make sure it degrades gracefully rather
+     * than crashing on a wrong guess.
+     */
+    public function test_it_maps_a_grn_response_with_items_defensively(): void
+    {
+        Http::fake([
+            'api.salesplaypos.com/*' => Http::response([
+                'grn_list' => [
+                    [
+                        'id' => 'grn-1',
+                        'supplier_name' => 'Acme Supplies',
+                        'supplier_invoice_no' => 'INV-001',
+                        'grn_date' => '2026-07-20 10:00:00',
+                        'grn_total' => 150.0,
+                        'items' => [
+                            [
+                                'product_id' => 'prod-1',
+                                'product_name' => 'Sugar 1kg',
+                                'qty' => 10,
+                                'unit_cost' => 15.0,
+                                'total_unit_cost' => 150.0,
+                            ],
+                        ],
+                    ],
+                ],
+                'cursor' => null,
+            ], 200),
+        ]);
+
+        $client = new SalesPlayApiClient(baseUrl: 'https://api.salesplaypos.com/v1.0', timeout: 30);
+
+        $page = $client->fetchStockIns(shopId: 'shop-abc', apiToken: 'test-token', since: null, cursor: null);
+
+        $this->assertCount(1, $page->items);
+        $stockIn = $page->items[0];
+        $this->assertSame('grn-1', $stockIn->salesplayGrnId);
+        $this->assertSame('Acme Supplies', $stockIn->supplierName);
+        $this->assertSame('INV-001', $stockIn->invoiceNo);
+        $this->assertSame(150.0, $stockIn->total);
+
+        $this->assertCount(1, $stockIn->items);
+        $this->assertSame('Sugar 1kg', $stockIn->items[0]->productName);
+        $this->assertSame(10.0, $stockIn->items[0]->quantity);
+        $this->assertSame(15.0, $stockIn->items[0]->unitCost);
+        $this->assertSame(150.0, $stockIn->items[0]->total);
+    }
 }

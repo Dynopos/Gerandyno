@@ -8,6 +8,11 @@ use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockInData;
+use App\Services\SalesPlay\DTO\SalesPlayStockInItemData;
+use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockLevelData;
+use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
 use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -66,15 +71,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
 
         try {
             $response = Http::baseUrl(rtrim($this->baseUrl, '/'))
-                ->withHeaders([
-                    'Token' => "Bearer {$apiToken}",
-                    'User-Agent' => 'DynoPOS-CloudReport/1.0',
-                    // SalesPlay's server uses Apache content negotiation and only has a
-                    // text/html-typed variant registered; asking strictly for
-                    // application/json (the Laravel default) makes Apache itself
-                    // reject the request with a 406 before the app ever sees it.
-                    'Accept' => '*/*',
-                ])
+                ->withHeaders($this->headers($apiToken))
                 ->timeout($this->timeout)
                 ->send('GET', '/receipts', ['json' => array_filter([
                     'shop_id' => $shopId,
@@ -96,6 +93,111 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
         }
 
         return $this->mapResponseToPage($response->json(), previousCursor: $cursor);
+    }
+
+    public function fetchStockLevels(
+        string $shopId,
+        string $apiToken,
+        ?string $cursor,
+    ): SalesPlayStockLevelPage {
+        try {
+            $response = Http::baseUrl(rtrim($this->baseUrl, '/'))
+                ->withHeaders($this->headers($apiToken))
+                ->timeout($this->timeout)
+                ->send('GET', '/inventory', ['json' => array_filter([
+                    'shop_id' => $shopId,
+                    'limit' => self::PAGE_SIZE,
+                    'cursor' => $cursor,
+                ])]);
+        } catch (Throwable $e) {
+            throw new SalesPlayApiException(
+                "SalesPlay API request failed for shop [{$shopId}]: {$e->getMessage()}", previous: $e
+            );
+        }
+
+        if ($response->failed()) {
+            throw new SalesPlayApiException(
+                "SalesPlay API returned HTTP {$response->status()} for shop [{$shopId}]: {$response->body()}"
+            );
+        }
+
+        $payload = $response->json();
+        $levels = $payload['inventory_levels'] ?? [];
+        $nextCursor = $payload['cursor'] ?? null;
+
+        return new SalesPlayStockLevelPage(
+            items: array_values(array_map(fn (array $level) => $this->mapStockLevel($level), $levels)),
+            hasMore: $levels !== [] && $nextCursor !== null && $nextCursor !== $cursor,
+            nextCursor: $nextCursor,
+        );
+    }
+
+    /**
+     * The /grn endpoint has never returned a non-empty grn_list against the
+     * real API during development (the test shop has no manual stock-in
+     * entries yet), so these item/field names are a best guess based on
+     * SalesPlay's "create GRN" request body shape rather than a confirmed
+     * response. Mapping is deliberately defensive (nullable fallbacks) so a
+     * wrong guess produces incomplete data instead of a crash — this should
+     * be verified and corrected once a real shop has GRN data to inspect.
+     *
+     * created_at_min/max filtering is not sent because the real filter field
+     * name for GRN dates is unconfirmed; instead every sync pages through
+     * the full grn list and relies on idempotent storage to skip records
+     * already synced.
+     */
+    public function fetchStockIns(
+        string $shopId,
+        string $apiToken,
+        ?CarbonInterface $since,
+        ?string $cursor,
+    ): SalesPlayStockInPage {
+        try {
+            $response = Http::baseUrl(rtrim($this->baseUrl, '/'))
+                ->withHeaders($this->headers($apiToken))
+                ->timeout($this->timeout)
+                ->send('GET', '/grn', ['json' => array_filter([
+                    'shop_id' => $shopId,
+                    'limit' => self::PAGE_SIZE,
+                    'cursor' => $cursor,
+                ])]);
+        } catch (Throwable $e) {
+            throw new SalesPlayApiException(
+                "SalesPlay API request failed for shop [{$shopId}]: {$e->getMessage()}", previous: $e
+            );
+        }
+
+        if ($response->failed()) {
+            throw new SalesPlayApiException(
+                "SalesPlay API returned HTTP {$response->status()} for shop [{$shopId}]: {$response->body()}"
+            );
+        }
+
+        $payload = $response->json();
+        $grns = $payload['grn_list'] ?? [];
+        $nextCursor = $payload['cursor'] ?? null;
+
+        return new SalesPlayStockInPage(
+            items: array_values(array_map(fn (array $grn) => $this->mapStockIn($grn), $grns)),
+            hasMore: $grns !== [] && $nextCursor !== null && $nextCursor !== $cursor,
+            nextCursor: $nextCursor,
+        );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function headers(string $apiToken): array
+    {
+        return [
+            'Token' => "Bearer {$apiToken}",
+            'User-Agent' => 'DynoPOS-CloudReport/1.0',
+            // SalesPlay's server uses Apache content negotiation and only has a
+            // text/html-typed variant registered; asking strictly for
+            // application/json (the Laravel default) makes Apache itself
+            // reject the request with a 406 before the app ever sees it.
+            'Accept' => '*/*',
+        ];
     }
 
     /**
@@ -195,6 +297,54 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
         return new SalesPlayPaymentData(
             paymentMethod: $payment['payment_type'] ?? 'unknown',
             amount: (float) ($payment['money_amount'] ?? 0),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $level
+     */
+    private function mapStockLevel(array $level): SalesPlayStockLevelData
+    {
+        return new SalesPlayStockLevelData(
+            salesplayProductId: (string) $level['product_id'],
+            productCode: $level['product_code'] ?? null,
+            quantityOnHand: (float) ($level['in_stock'] ?? 0),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $grn
+     */
+    private function mapStockIn(array $grn): SalesPlayStockInData
+    {
+        $items = array_map(fn (array $item) => $this->mapStockInItem($item), $grn['items'] ?? []);
+        $total = round(array_sum(array_map(fn (SalesPlayStockInItemData $item) => $item->total, $items)), 2);
+
+        return new SalesPlayStockInData(
+            salesplayGrnId: (string) ($grn['id'] ?? $grn['grn_id'] ?? $grn['grn_number']),
+            supplierName: $grn['supplier_name'] ?? null,
+            invoiceNo: $grn['supplier_invoice_no'] ?? null,
+            receivedAt: isset($grn['grn_date']) ? Carbon::parse($grn['grn_date']) : now(),
+            total: (float) ($grn['grn_total'] ?? $total),
+            items: $items,
+            raw: $grn,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function mapStockInItem(array $item): SalesPlayStockInItemData
+    {
+        $quantity = (float) ($item['qty'] ?? $item['quantity'] ?? 0);
+        $unitCost = (float) ($item['unit_cost'] ?? 0);
+
+        return new SalesPlayStockInItemData(
+            salesplayProductId: isset($item['product_id']) ? (string) $item['product_id'] : null,
+            productName: $item['product_name'] ?? 'Unknown product',
+            quantity: $quantity,
+            unitCost: $unitCost,
+            total: (float) ($item['total_unit_cost'] ?? round($quantity * $unitCost, 2)),
         );
     }
 }

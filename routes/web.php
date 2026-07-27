@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Reports\CustomerReportController;
+use App\Http\Controllers\Reports\InventoryReportController;
 use App\Http\Controllers\Reports\MonthlyReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/products/email', [ProductReportController::class, 'email'])->middleware('throttle:6,1')->name('products.email');
         Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
+        Route::get('/inventory/stock', [InventoryReportController::class, 'stock'])->name('inventory.stock');
+        Route::get('/inventory/stock-ins', [InventoryReportController::class, 'stockIns'])->name('inventory.stock-ins.index');
+        Route::get('/inventory/stock-ins/{stockIn}', [InventoryReportController::class, 'showStockIn'])->name('inventory.stock-ins.show');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

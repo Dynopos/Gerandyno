@@ -5,20 +5,57 @@ namespace Tests\Feature;
 use App\Jobs\SyncSalesPlayAccountJob;
 use App\Models\Company;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
+use App\Models\StockIn;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
 use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockInData;
+use App\Services\SalesPlay\DTO\SalesPlayStockInItemData;
+use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockLevelData;
+use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
 use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use App\Services\SalesPlay\SalesPlaySyncService;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+
+/**
+ * Fills in the stock-related interface methods with empty pages so the
+ * anonymous fake clients below only need to define fetchReceipts()
+ * behaviour relevant to what each test is actually checking.
+ */
+trait FakesEmptySalesPlayStockData
+{
+    public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+    {
+        return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+    }
+
+    public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+    {
+        return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+    }
+}
+
+/**
+ * Fills in fetchReceipts() with an empty page so the anonymous fake clients
+ * used by the stock-focused tests only need to define stock behaviour.
+ */
+trait FakesEmptySalesPlayReceipts
+{
+    public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+    {
+        return new SalesPlayReceiptPage(items: [], hasMore: false, nextCursor: null);
+    }
+}
 
 class SalesPlaySyncTest extends TestCase
 {
@@ -68,6 +105,8 @@ class SalesPlaySyncTest extends TestCase
 
         $fake = new class($this->makeReceipt('rcpt-1'), $this->makeReceipt('rcpt-2')) implements SalesPlayApiClientInterface
         {
+            use FakesEmptySalesPlayStockData;
+
             private array $receipts;
 
             public function __construct(SalesPlayReceiptData ...$receipts)
@@ -106,6 +145,8 @@ class SalesPlaySyncTest extends TestCase
 
         $fake = new class($this->makeReceipt('rcpt-1')) implements SalesPlayApiClientInterface
         {
+            use FakesEmptySalesPlayStockData;
+
             public function __construct(private SalesPlayReceiptData $receipt) {}
 
             public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
@@ -130,6 +171,8 @@ class SalesPlaySyncTest extends TestCase
 
         $fake = new class($page1, $page2) implements SalesPlayApiClientInterface
         {
+            use FakesEmptySalesPlayStockData;
+
             public function __construct(private array $page1, private array $page2) {}
 
             public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
@@ -155,6 +198,8 @@ class SalesPlaySyncTest extends TestCase
 
         $fake = new class implements SalesPlayApiClientInterface
         {
+            use FakesEmptySalesPlayStockData;
+
             public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 throw new SalesPlayApiException('SalesPlay is down');
@@ -195,6 +240,8 @@ class SalesPlaySyncTest extends TestCase
 
         $fake = new class($this->makeReceipt('rcpt-good')) implements SalesPlayApiClientInterface
         {
+            use FakesEmptySalesPlayStockData;
+
             public function __construct(private SalesPlayReceiptData $receipt) {}
 
             public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
@@ -218,5 +265,120 @@ class SalesPlaySyncTest extends TestCase
         $this->assertSame('failed', $badAccount->last_sync_status);
         $this->assertSame(1, Receipt::withoutGlobalScopes()->where('salesplay_account_id', $goodAccount->id)->count());
         $this->assertSame(0, Receipt::withoutGlobalScopes()->where('salesplay_account_id', $badAccount->id)->count());
+    }
+
+    public function test_sync_refreshes_product_stock_levels(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null]);
+
+        $existingProduct = Product::withoutGlobalScopes()->create([
+            'company_id' => $account->company_id,
+            'salesplay_product_id' => 'p-1',
+            'name' => 'Existing Product',
+            'stock_on_hand' => 0,
+        ]);
+
+        $fake = new class implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayReceipts;
+
+            public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(
+                    items: [
+                        new SalesPlayStockLevelData(salesplayProductId: 'p-1', productCode: '1000', quantityOnHand: 42),
+                        new SalesPlayStockLevelData(salesplayProductId: 'p-2', productCode: '1001', quantityOnHand: 7),
+                    ],
+                    hasMore: false,
+                    nextCursor: null,
+                );
+            }
+
+            public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fake))->sync($account);
+
+        $existingProduct->refresh();
+        $this->assertSame('42.00', $existingProduct->stock_on_hand);
+        $this->assertNotNull($existingProduct->stock_synced_at);
+
+        $newProduct = Product::withoutGlobalScopes()->where('salesplay_product_id', 'p-2')->first();
+        $this->assertNotNull($newProduct);
+        $this->assertSame('7.00', $newProduct->stock_on_hand);
+    }
+
+    public function test_sync_stores_stock_ins_and_skips_ones_already_synced(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null]);
+
+        StockIn::withoutGlobalScopes()->create([
+            'company_id' => $account->company_id,
+            'salesplay_account_id' => $account->id,
+            'salesplay_grn_id' => 'grn-existing',
+            'received_at' => now(),
+            'total' => 10,
+        ]);
+
+        $stockInData = new SalesPlayStockInData(
+            salesplayGrnId: 'grn-new',
+            supplierName: 'Acme Supplies',
+            invoiceNo: 'INV-001',
+            receivedAt: now(),
+            total: 150.0,
+            items: [
+                new SalesPlayStockInItemData(
+                    salesplayProductId: 'p-1',
+                    productName: 'Sugar 1kg',
+                    quantity: 10,
+                    unitCost: 15.0,
+                    total: 150.0,
+                ),
+            ],
+            raw: ['id' => 'grn-new'],
+        );
+
+        $duplicateStockInData = new SalesPlayStockInData(
+            salesplayGrnId: 'grn-existing',
+            supplierName: null,
+            invoiceNo: null,
+            receivedAt: now(),
+            total: 10,
+            items: [],
+            raw: [],
+        );
+
+        $fake = new class($stockInData, $duplicateStockInData) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayReceipts;
+
+            public function __construct(
+                private SalesPlayStockInData $new,
+                private SalesPlayStockInData $duplicate,
+            ) {}
+
+            public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [$this->new, $this->duplicate], hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fake))->sync($account);
+
+        $this->assertSame(2, StockIn::withoutGlobalScopes()->where('salesplay_account_id', $account->id)->count());
+
+        $stored = StockIn::withoutGlobalScopes()->where('salesplay_grn_id', 'grn-new')->first();
+        $this->assertNotNull($stored);
+        $this->assertSame('Acme Supplies', $stored->supplier_name);
+        $this->assertSame(1, $stored->items()->count());
+        $this->assertSame('Sugar 1kg', $stored->items()->first()->product_name);
     }
 }

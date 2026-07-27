@@ -8,10 +8,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['company_id', 'salesplay_product_id', 'name', 'category', 'sku', 'barcode'])]
+#[Fillable(['company_id', 'salesplay_product_id', 'name', 'category', 'sku', 'barcode', 'stock_on_hand', 'stock_synced_at'])]
 class Product extends Model
 {
     use BelongsToCompany, HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'stock_on_hand' => 'decimal:2',
+            'stock_synced_at' => 'datetime',
+        ];
+    }
 
     public function receiptItems(): HasMany
     {
