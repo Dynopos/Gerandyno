@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\SalesplayAccountController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Reports\CustomerReportController;
@@ -39,6 +40,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
         Route::get('/inventory', [InventoryReportController::class, 'index'])->name('inventory.index');
+    });
+
+    Route::middleware('company')->group(function () {
+        Route::resource('expenses', ExpenseController::class)->except('show');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

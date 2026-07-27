@@ -91,6 +91,17 @@
             </x-slot>
             {{ __('app.nav.inventory') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <rect x="2.5" y="6" width="19" height="12" rx="2" />
+                    <circle cx="12" cy="12" r="2.5" />
+                    <path d="M6 9h.01M18 15h.01" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.expenses') }}
+        </x-sidebar-link>
     @endif
 
     @if (Auth::user()->isAdmin())
