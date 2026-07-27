@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\SalesplayAccountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reports\CustomerReportController;
 use App\Http\Controllers\Reports\MonthlyReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
@@ -34,6 +35,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/products', [ProductReportController::class, 'index'])->name('products');
         Route::get('/products/export/{format}', [ProductReportController::class, 'export'])->name('products.export');
         Route::post('/products/email', [ProductReportController::class, 'email'])->middleware('throttle:6,1')->name('products.email');
+        Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

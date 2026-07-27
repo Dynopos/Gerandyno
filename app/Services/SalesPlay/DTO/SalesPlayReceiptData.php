@@ -20,6 +20,7 @@ final readonly class SalesPlayReceiptData
         public float $tax,
         public float $total,
         public ?string $paymentStatus,
+        public ?SalesPlayCustomerData $customer,
         public array $items,
         public array $payments,
         public array $raw,

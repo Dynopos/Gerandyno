@@ -3,6 +3,7 @@
 namespace App\Services\SalesPlay;
 
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
+use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
@@ -75,6 +76,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
             tax: $tax,
             total: $total,
             paymentStatus: 'paid',
+            customer: $this->fakeCustomer(),
             items: $items,
             payments: [
                 new SalesPlayPaymentData(
@@ -83,6 +85,20 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
                 ),
             ],
             raw: ['source' => 'mock'],
+        );
+    }
+
+    private function fakeCustomer(): SalesPlayCustomerData
+    {
+        return new SalesPlayCustomerData(
+            salesplayCustomerId: (string) fake()->numberBetween(1, 30),
+            name: fake()->name(),
+            email: fake()->safeEmail(),
+            phone: fake()->phoneNumber(),
+            address: fake()->streetAddress(),
+            city: fake()->city(),
+            region: fake()->state(),
+            postalCode: fake()->postcode(),
         );
     }
 

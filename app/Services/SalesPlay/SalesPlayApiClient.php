@@ -3,6 +3,7 @@
 namespace App\Services\SalesPlay;
 
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
+use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
@@ -137,9 +138,37 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
             // /receipts has no payment_status field; voids and refunds are separate
             // SalesPlay endpoints (void_receipts, credit_note_and_refund) we don't sync.
             paymentStatus: 'paid',
+            customer: $this->mapCustomer($receipt['customer'] ?? []),
             items: $items,
             payments: array_map(fn (array $payment) => $this->mapPayment($payment), $receipt['payments'] ?? []),
             raw: $receipt,
+        );
+    }
+
+    /**
+     * The API nests the customer as a single-element array. SalesPlay
+     * assigns every receipt a customer — walk-in sales get its generic
+     * default profile (name "N/A") rather than leaving this empty.
+     *
+     * @param  array<int, array<string, mixed>>  $customers
+     */
+    private function mapCustomer(array $customers): ?SalesPlayCustomerData
+    {
+        $customer = $customers[0] ?? null;
+
+        if ($customer === null || ! isset($customer['id'])) {
+            return null;
+        }
+
+        return new SalesPlayCustomerData(
+            salesplayCustomerId: (string) $customer['id'],
+            name: $customer['name'] ?? 'N/A',
+            email: $customer['email'] ?: null,
+            phone: $customer['phone_number'] ?: null,
+            address: $customer['address'] ?: null,
+            city: $customer['city'] ?: null,
+            region: $customer['region'] ?: null,
+            postalCode: $customer['postal_code'] ?: null,
         );
     }
 
