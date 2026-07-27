@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Company;
 use App\Models\Product;
+use App\Models\Receipt;
+use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
 use App\Models\StockIn;
 use App\Models\StockInItem;
@@ -24,80 +26,66 @@ class InventoryReportTest extends TestCase
         return [$user, $company, $account];
     }
 
-    public function test_stock_balance_lists_products_with_stock_on_hand(): void
+    public function test_index_shows_opening_balance_stock_in_stock_out_and_balance(): void
     {
-        [$user, $company] = $this->makeCustomerUser();
+        [$user, $company, $account] = $this->makeCustomerUser();
 
-        Product::factory()->create([
+        $product = Product::factory()->create([
             'company_id' => $company->id,
             'name' => 'Sugar 1kg',
-            'stock_on_hand' => 42,
+            'stock_on_hand' => 32,
         ]);
-
-        $response = $this->actingAs($user)->get('/reports/inventory/stock');
-
-        $response->assertOk();
-        $response->assertSee('Sugar 1kg');
-        $response->assertSee('42');
-    }
-
-    public function test_stock_balance_is_blocked_for_admin_without_company(): void
-    {
-        $admin = User::factory()->admin()->create();
-
-        $this->actingAs($admin)->get('/reports/inventory/stock')->assertForbidden();
-    }
-
-    public function test_stock_ins_index_lists_records(): void
-    {
-        [$user, $company, $account] = $this->makeCustomerUser();
-
-        StockIn::factory()->create([
-            'company_id' => $company->id,
-            'salesplay_account_id' => $account->id,
-            'supplier_name' => 'Acme Supplies',
-            'total' => 150,
-        ]);
-
-        $response = $this->actingAs($user)->get('/reports/inventory/stock-ins');
-
-        $response->assertOk();
-        $response->assertSee('Acme Supplies');
-    }
-
-    public function test_stock_in_show_lists_its_items(): void
-    {
-        [$user, $company, $account] = $this->makeCustomerUser();
 
         $stockIn = StockIn::factory()->create([
             'company_id' => $company->id,
             'salesplay_account_id' => $account->id,
-            'supplier_name' => 'Acme Supplies',
         ]);
 
         StockInItem::factory()->create([
             'stock_in_id' => $stockIn->id,
-            'product_name' => 'Sugar 1kg',
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'quantity' => 20,
         ]);
 
-        $response = $this->actingAs($user)->get("/reports/inventory/stock-ins/{$stockIn->id}");
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+        ]);
+
+        ReceiptItem::factory()->create([
+            'receipt_id' => $receipt->id,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'quantity' => 8,
+        ]);
+
+        // opening balance = balance(32) - stock_in(20) + stock_out(8) = 20
+        $response = $this->actingAs($user)->get('/reports/inventory');
 
         $response->assertOk();
         $response->assertSee('Sugar 1kg');
+        $response->assertSeeInOrder(['20', '20', '8', '32']);
     }
 
-    public function test_stock_in_show_does_not_leak_another_companys_record(): void
+    public function test_index_is_blocked_for_admin_without_company(): void
     {
-        [$userA] = $this->makeCustomerUser();
-        [, $companyB, $accountB] = $this->makeCustomerUser();
+        $admin = User::factory()->admin()->create();
 
-        $stockInB = StockIn::factory()->create([
-            'company_id' => $companyB->id,
-            'salesplay_account_id' => $accountB->id,
-        ]);
+        $this->actingAs($admin)->get('/reports/inventory')->assertForbidden();
+    }
 
-        $response = $this->actingAs($userA)->get("/reports/inventory/stock-ins/{$stockInB->id}");
+    public function test_index_search_filters_by_product_name(): void
+    {
+        [$user, $company] = $this->makeCustomerUser();
 
-        $response->assertNotFound();
+        Product::factory()->create(['company_id' => $company->id, 'name' => 'Sugar 1kg']);
+        Product::factory()->create(['company_id' => $company->id, 'name' => 'Flour 1kg']);
+
+        $response = $this->actingAs($user)->get('/reports/inventory?q=Sugar');
+
+        $response->assertOk();
+        $response->assertSee('Sugar 1kg');
+        $response->assertDontSee('Flour 1kg');
     }
 }
