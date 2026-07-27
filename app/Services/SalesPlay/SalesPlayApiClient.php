@@ -41,6 +41,15 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
      */
     private const PAGE_SIZE = 100;
 
+    /**
+     * SalesPlay is a Malaysian POS product and its created_at_min/max filters
+     * appear to be interpreted in local Malaysia time, not UTC — sending UTC
+     * timestamps silently cut off same-day receipts created less than 8
+     * hours before the request (verified by comparing our sync results
+     * against SalesPlay's own Backoffice dashboard for "today").
+     */
+    private const API_TIMEZONE = 'Asia/Kuala_Lumpur';
+
     public function __construct(
         private readonly string $baseUrl,
         private readonly int $timeout,
@@ -68,8 +77,8 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
                 ->timeout($this->timeout)
                 ->send('GET', '/receipts', ['json' => array_filter([
                     'shop_id' => $shopId,
-                    'created_at_min' => $since->format('Y-m-d H:i:s'),
-                    'created_at_max' => now()->format('Y-m-d H:i:s'),
+                    'created_at_min' => $since->clone()->timezone(self::API_TIMEZONE)->format('Y-m-d H:i:s'),
+                    'created_at_max' => now()->timezone(self::API_TIMEZONE)->format('Y-m-d H:i:s'),
                     'limit' => self::PAGE_SIZE,
                     'cursor' => $cursor,
                 ])]);
