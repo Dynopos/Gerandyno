@@ -38,9 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/products/email', [ProductReportController::class, 'email'])->middleware('throttle:6,1')->name('products.email');
         Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
-        Route::get('/inventory/stock', [InventoryReportController::class, 'stock'])->name('inventory.stock');
-        Route::get('/inventory/stock-ins', [InventoryReportController::class, 'stockIns'])->name('inventory.stock-ins.index');
-        Route::get('/inventory/stock-ins/{stockIn}', [InventoryReportController::class, 'showStockIn'])->name('inventory.stock-ins.show');
+        Route::get('/inventory', [InventoryReportController::class, 'index'])->name('inventory.index');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

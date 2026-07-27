@@ -25,4 +25,9 @@ class Product extends Model
     {
         return $this->hasMany(ReceiptItem::class);
     }
+
+    public function stockInItems(): HasMany
+    {
+        return $this->hasMany(StockInItem::class);
+    }
 }
