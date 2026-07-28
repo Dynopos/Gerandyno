@@ -4,7 +4,7 @@
             <x-slot name="actions">
                 <select
                     onchange="window.location = this.value"
-                    class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-red-500 focus:ring-red-500"
+                    class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-gold-500 focus:ring-gold-500"
                 >
                     @foreach ($availableYears as $availableYear)
                         <option value="{{ route('reports.monthly', ['year' => $availableYear]) }}" @selected($availableYear === $year)>

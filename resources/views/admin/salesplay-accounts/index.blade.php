@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.admin.salesplay_accounts.title')" :subtitle="__('app.admin.salesplay_accounts.subtitle')">
             <x-slot name="actions">
-                <a href="{{ route('admin.salesplay-accounts.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700">
+                <a href="{{ route('admin.salesplay-accounts.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-gold-700">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -49,7 +49,7 @@
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
                                         <div class="flex items-center justify-end gap-3">
-                                            <a href="{{ route('admin.salesplay-accounts.edit', $account) }}" class="font-medium text-red-600 hover:text-red-700">
+                                            <a href="{{ route('admin.salesplay-accounts.edit', $account) }}" class="font-medium text-gold-600 hover:text-gold-700">
                                                 {{ __('app.admin.salesplay_accounts.edit') }}
                                             </a>
                                             <form method="POST" action="{{ route('admin.salesplay-accounts.destroy', $account) }}" onsubmit="return confirm('{{ __('app.admin.salesplay_accounts.delete_confirm', ['name' => $account->shop_name]) }}')">

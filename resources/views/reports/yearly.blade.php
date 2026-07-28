@@ -49,7 +49,7 @@
                                         <x-money :amount="$row['total']" />
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
-                                        <a href="{{ route('reports.monthly', ['year' => $row['year']]) }}" class="font-medium text-red-600 hover:text-red-700">
+                                        <a href="{{ route('reports.monthly', ['year' => $row['year']]) }}" class="font-medium text-gold-600 hover:text-gold-700">
                                             {!! __('app.reports.yearly.view_monthly') !!}
                                         </a>
                                     </td>

@@ -10,14 +10,14 @@
             color: #0f172a;
         }
         .header {
-            border-bottom: 2px solid #dc2626;
+            border-bottom: 2px solid #7a5717;
             padding-bottom: 10px;
             margin-bottom: 16px;
         }
         .brand {
             font-size: 16px;
             font-weight: bold;
-            color: #dc2626;
+            color: #7a5717;
         }
         .company {
             font-size: 12px;

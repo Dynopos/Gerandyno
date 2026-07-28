@@ -29,7 +29,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <a href="{{ route('admin.companies.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-red-200 hover:bg-red-50/40">
+            <a href="{{ route('admin.companies.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-gold-200 hover:bg-gold-50/40">
                 <div>
                     <p class="text-sm font-semibold text-slate-900">{{ __('app.admin.dashboard.manage_companies') }}</p>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.admin.companies.subtitle') }}</p>
@@ -38,7 +38,7 @@
                     <path d="M9 6l6 6-6 6" />
                 </svg>
             </a>
-            <a href="{{ route('admin.salesplay-accounts.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-red-200 hover:bg-red-50/40">
+            <a href="{{ route('admin.salesplay-accounts.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-gold-200 hover:bg-gold-50/40">
                 <div>
                     <p class="text-sm font-semibold text-slate-900">{{ __('app.admin.dashboard.manage_salesplay_accounts') }}</p>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.admin.salesplay_accounts.subtitle') }}</p>

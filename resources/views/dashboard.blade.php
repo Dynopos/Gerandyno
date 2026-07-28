@@ -2,13 +2,13 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 
         {{-- Welcome banner --}}
-        <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-red-600 to-orange-500 px-6 py-8 text-white shadow-sm sm:px-8">
-            <p class="text-sm font-medium text-red-100">{{ now()->translatedFormat('l, d F Y') }}</p>
+        <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 to-neutral-700 px-6 py-8 text-white shadow-sm sm:px-8">
+            <p class="text-sm font-medium text-gold-200">{{ now()->translatedFormat('l, d F Y') }}</p>
             <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
                 {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
             </h1>
             @if (auth()->user()->company)
-                <p class="mt-2 text-sm text-red-100">{{ auth()->user()->company->name }}</p>
+                <p class="mt-2 text-sm text-gold-200">{{ auth()->user()->company->name }}</p>
             @endif
         </div>
 
@@ -91,7 +91,7 @@
             <div class="rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
                 <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                     <h2 class="text-sm font-semibold text-slate-900">{{ __('app.dashboard.recent_receipts') }}</h2>
-                    <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-red-600 hover:text-red-700">
+                    <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-gold-600 hover:text-gold-700">
                         {!! __('app.dashboard.view_all') !!}
                     </a>
                 </div>
