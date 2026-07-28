@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
@@ -171,5 +172,65 @@ class ReportsTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('Rahsia Company B');
+    }
+
+    public function test_payment_types_report_aggregates_total_and_transactions_per_method_within_period(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+
+        Payment::factory()->create([
+            'receipt_id' => $receipt->id,
+            'payment_method' => 'cash',
+            'amount' => 50,
+        ]);
+
+        Payment::factory()->create([
+            'receipt_id' => $receipt->id,
+            'payment_method' => 'cash',
+            'amount' => 25,
+        ]);
+
+        Payment::factory()->create([
+            'receipt_id' => $receipt->id,
+            'payment_method' => 'card',
+            'amount' => 100,
+        ]);
+
+        $response = $this->actingAs($user)->get('/reports/payment-types?filter=this_month');
+
+        $response->assertOk();
+        $response->assertSee('cash');
+        $response->assertSee('RM 75.00');
+        $response->assertSee('card');
+        $response->assertSee('RM 100.00');
+    }
+
+    public function test_payment_types_report_does_not_leak_another_companys_payments(): void
+    {
+        [$userA] = $this->makeCustomer();
+        [, $companyB, $accountB] = $this->makeCustomer();
+
+        $receiptB = Receipt::factory()->create([
+            'company_id' => $companyB->id,
+            'salesplay_account_id' => $accountB->id,
+            'transaction_date' => now(),
+        ]);
+
+        Payment::factory()->create([
+            'receipt_id' => $receiptB->id,
+            'payment_method' => 'boost',
+            'amount' => 999,
+        ]);
+
+        $response = $this->actingAs($userA)->get('/reports/payment-types?filter=this_month');
+
+        $response->assertOk();
+        $response->assertDontSee('boost');
     }
 }

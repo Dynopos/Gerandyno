@@ -9,6 +9,7 @@ return [
         'monthly' => 'Monthly',
         'yearly' => 'Yearly',
         'products' => 'Products',
+        'payment_types' => 'Payment Types',
         'customers' => 'Customers',
         'inventory' => 'Inventory',
         'expenses' => 'Expenses',
@@ -187,6 +188,14 @@ return [
             'no_data' => 'No product sales for this period.',
             'product_name' => 'Product Name',
             'quantity_sold' => 'Quantity Sold',
+            'total_sales' => 'Total Sales',
+        ],
+        'payment_types' => [
+            'title' => 'Payment Type Report',
+            'subtitle' => 'Sales by payment method',
+            'no_data' => 'No sales for this period.',
+            'payment_method' => 'Payment Method',
+            'transactions' => 'Transactions',
             'total_sales' => 'Total Sales',
         ],
         'customers' => [

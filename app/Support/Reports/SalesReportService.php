@@ -2,6 +2,7 @@
 
 namespace App\Support\Reports;
 
+use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use Carbon\CarbonImmutable;
@@ -125,6 +126,29 @@ final class SalesReportService
                 'product_name' => $row->product_name,
                 'quantity_sold' => (float) $row->quantity_sold,
                 'total_sales' => (float) $row->total_sales,
+            ]);
+    }
+
+    /**
+     * Total sales and transaction count per payment method (cash, card,
+     * e-wallet, etc.) within a date range.
+     *
+     * @return Collection<int, array{payment_method: string, total: float, transactions: int}>
+     */
+    public function paymentTypeSales(int $companyId, CarbonInterface $start, CarbonInterface $end): Collection
+    {
+        return Payment::query()
+            ->join('receipts', 'receipts.id', '=', 'payments.receipt_id')
+            ->where('receipts.company_id', $companyId)
+            ->whereBetween('receipts.transaction_date', [$start, $end])
+            ->groupBy('payments.payment_method')
+            ->selectRaw('payments.payment_method as payment_method, SUM(payments.amount) as total, COUNT(*) as transactions')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($row) => [
+                'payment_method' => $row->payment_method,
+                'total' => (float) $row->total,
+                'transactions' => (int) $row->transactions,
             ]);
     }
 
