@@ -15,7 +15,7 @@
                 <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">customer_email</code> — {{ __('app.admin.import.col_customer_email') }}</li>
             </ul>
 
-            <a href="{{ asset('templates/customer-import-template.csv') }}" class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700">
+            <a href="{{ asset('templates/customer-import-template.csv') }}" class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-gold-600 hover:text-gold-700">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                     <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
                     <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
@@ -34,12 +34,12 @@
                 type="file"
                 accept=".csv,text/csv"
                 required
-                class="mt-1 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-red-700 hover:file:bg-red-100"
+                class="mt-1 block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-gold-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-gold-700 hover:file:bg-gold-100"
             >
             <x-input-error :messages="$errors->get('file')" class="mt-2" />
 
             <div class="mt-4 flex justify-end">
-                <x-primary-button class="bg-red-600 hover:bg-red-700 focus:bg-red-700 focus:ring-red-500">
+                <x-primary-button class="bg-gold-600 hover:bg-gold-700 focus:bg-gold-700 focus:ring-gold-500">
                     {{ __('app.admin.import.submit') }}
                 </x-primary-button>
             </div>

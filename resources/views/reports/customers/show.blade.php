@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('reports.customers.index') }}" class="font-medium text-red-600 hover:text-red-700">{!! __('app.reports.customers.back_to_list') !!}</a>
+            <a href="{{ route('reports.customers.index') }}" class="font-medium text-gold-600 hover:text-gold-700">{!! __('app.reports.customers.back_to_list') !!}</a>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

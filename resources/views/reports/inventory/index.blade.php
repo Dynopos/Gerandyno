@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.reports.inventory.title')" :subtitle="__('app.reports.inventory.subtitle')">
             <x-slot name="actions">
-                <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700">
+                <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-gold-700">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                         <path d="M4 4v5h5M20 20v-5h-5" />
                         <path d="M5.5 9a7 7 0 0112.6-2.5M18.5 15a7 7 0 01-12.6 2.5" />
@@ -25,7 +25,7 @@
                 name="q"
                 value="{{ $search }}"
                 placeholder="{{ __('app.reports.inventory.search_placeholder') }}"
-                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-red-500 focus:ring-red-500"
+                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-gold-500 focus:ring-gold-500"
             >
         </form>
 

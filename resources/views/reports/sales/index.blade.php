@@ -52,7 +52,7 @@
                                         {{ $receipt->transaction_date->translatedFormat('d M Y, h:i A') }}
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-900">
-                                        <a href="{{ route('reports.sales.show', $receipt) }}" class="hover:text-red-600">
+                                        <a href="{{ route('reports.sales.show', $receipt) }}" class="hover:text-gold-600">
                                             {{ $receipt->receipt_number ?? '#'.$receipt->id }}
                                         </a>
                                     </td>

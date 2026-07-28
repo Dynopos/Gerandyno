@@ -2,7 +2,7 @@
 
 @php
     $iconColors = [
-        'red' => 'bg-red-50 text-red-600',
+        'red' => 'bg-gold-50 text-gold-600',
         'orange' => 'bg-orange-50 text-orange-600',
         'blue' => 'bg-blue-50 text-blue-600',
         'teal' => 'bg-teal-50 text-teal-600',
