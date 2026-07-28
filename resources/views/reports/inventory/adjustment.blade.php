@@ -1,13 +1,32 @@
 <x-app-layout>
     <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        <x-page-header :title="__('app.reports.inventory.adjustment')" :subtitle="$product->name" />
+        <x-page-header :title="__('app.reports.inventory.adjustment')" />
 
         <p class="mt-2 text-sm text-slate-500">{{ __('app.reports.inventory.adjustment_help') }}</p>
 
-        <form method="POST" action="{{ route('reports.inventory.adjustment.store', $product) }}" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form method="POST" action="{{ route('reports.inventory.adjustment.store') }}" class="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             @csrf
 
             <div class="space-y-4">
+                <div>
+                    <x-input-label for="product_id" :value="__('app.reports.inventory.adjustment_product')" />
+                    <select
+                        id="product_id"
+                        name="product_id"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required
+                        autofocus
+                    >
+                        <option value="">{{ __('app.reports.inventory.adjustment_product_placeholder') }}</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}" @selected(old('product_id') == $product->id)>
+                                {{ $product->name }}{{ $product->sku ? " ({$product->sku})" : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('product_id')" class="mt-2" />
+                </div>
+
                 <div>
                     <x-input-label for="quantity" :value="__('app.reports.inventory.adjustment_quantity')" />
                     <x-text-input
@@ -19,7 +38,6 @@
                         class="mt-1 block w-full"
                         :value="old('quantity')"
                         required
-                        autofocus
                     />
                     <x-input-error :messages="$errors->get('quantity')" class="mt-2" />
                 </div>

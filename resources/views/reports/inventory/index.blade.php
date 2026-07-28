@@ -1,6 +1,16 @@
 <x-app-layout>
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <x-page-header :title="__('app.reports.inventory.title')" :subtitle="__('app.reports.inventory.subtitle')" />
+        <x-page-header :title="__('app.reports.inventory.title')" :subtitle="__('app.reports.inventory.subtitle')">
+            <x-slot name="actions">
+                <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                        <path d="M4 4v5h5M20 20v-5h-5" />
+                        <path d="M5.5 9a7 7 0 0112.6-2.5M18.5 15a7 7 0 01-12.6 2.5" />
+                    </svg>
+                    {{ __('app.reports.inventory.adjustment') }}
+                </a>
+            </x-slot>
+        </x-page-header>
 
         <x-period-filter :period="$period" route-name="reports.inventory.index" />
 
@@ -33,7 +43,6 @@
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.stock_in') }}</th>
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.stock_out') }}</th>
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.balance') }}</th>
-                                <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -66,11 +75,6 @@
                                         'text-slate-900' => $closingBalance >= 0,
                                     ])>
                                         {{ rtrim(rtrim(number_format($closingBalance, 2), '0'), '.') }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
-                                        <a href="{{ route('reports.inventory.adjustment.create', $product) }}" class="font-medium text-red-600 hover:text-red-700">
-                                            {{ __('app.reports.inventory.adjustment') }}
-                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
