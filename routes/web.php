@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\CustomerImportController;
 use App\Http\Controllers\Admin\SalesplayAccountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
@@ -56,6 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('companies', CompanyController::class)->except('show');
         Route::resource('salesplay-accounts', SalesplayAccountController::class)->except('show');
+        Route::get('/import', [CustomerImportController::class, 'create'])->name('import.create');
+        Route::post('/import', [CustomerImportController::class, 'store'])->name('import.store');
     });
 });
 
