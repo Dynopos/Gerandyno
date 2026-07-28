@@ -12,6 +12,7 @@ use App\Http\Controllers\Reports\MonthlyReportController;
 use App\Http\Controllers\Reports\PnlReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
+use App\Http\Controllers\Reports\StockAdjustmentController;
 use App\Http\Controllers\Reports\YearlyReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
         Route::get('/inventory', [InventoryReportController::class, 'index'])->name('inventory.index');
+        Route::get('/inventory/{product}/adjustment', [StockAdjustmentController::class, 'create'])->name('inventory.adjustment.create');
+        Route::post('/inventory/{product}/adjustment', [StockAdjustmentController::class, 'store'])->name('inventory.adjustment.store');
         Route::get('/pnl', [PnlReportController::class, 'index'])->name('pnl');
         Route::get('/pnl/export/{format}', [PnlReportController::class, 'export'])->name('pnl.export');
         Route::post('/pnl/email', [PnlReportController::class, 'email'])->middleware('throttle:6,1')->name('pnl.email');

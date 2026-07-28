@@ -33,6 +33,7 @@
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.stock_in') }}</th>
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.stock_out') }}</th>
                                 <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.balance') }}</th>
+                                <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('app.reports.inventory.actions') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -40,17 +41,18 @@
                                 @php
                                     $stockIn = (float) ($product->stock_in ?? 0);
                                     $stockOut = (float) ($product->stock_out ?? 0);
-                                    $stockInAfterRange = (float) ($product->stock_in_after_range ?? 0);
-                                    $stockOutAfterRange = (float) ($product->stock_out_after_range ?? 0);
-                                    $currentBalance = $product->stock_on_hand;
-                                    $closingBalance = $currentBalance !== null ? $currentBalance - $stockInAfterRange + $stockOutAfterRange : null;
-                                    $openingBalance = $closingBalance !== null ? $closingBalance - $stockIn + $stockOut : null;
+                                    $openingBalance = $product->opening_balance;
+                                    $closingBalance = $product->closing_balance;
                                 @endphp
                                 <tr>
                                     <td class="px-5 py-3 text-sm font-medium text-slate-900">{{ $product->name }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm text-slate-600">{{ $product->sku ?: '-' }}</td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-right text-sm text-slate-600">
-                                        {{ $openingBalance !== null ? rtrim(rtrim(number_format($openingBalance, 2), '0'), '.') : '-' }}
+                                    <td @class([
+                                        'whitespace-nowrap px-5 py-3 text-right text-sm',
+                                        'text-rose-600' => $openingBalance < 0,
+                                        'text-slate-600' => $openingBalance >= 0,
+                                    ])>
+                                        {{ rtrim(rtrim(number_format($openingBalance, 2), '0'), '.') }}
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm text-slate-600">
                                         {{ rtrim(rtrim(number_format($stockIn, 2), '0'), '.') }}
@@ -58,8 +60,17 @@
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm text-slate-600">
                                         {{ rtrim(rtrim(number_format($stockOut, 2), '0'), '.') }}
                                     </td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-right text-sm font-semibold text-slate-900">
-                                        {{ $closingBalance !== null ? rtrim(rtrim(number_format($closingBalance, 2), '0'), '.') : '-' }}
+                                    <td @class([
+                                        'whitespace-nowrap px-5 py-3 text-right text-sm font-semibold',
+                                        'text-rose-600' => $closingBalance < 0,
+                                        'text-slate-900' => $closingBalance >= 0,
+                                    ])>
+                                        {{ rtrim(rtrim(number_format($closingBalance, 2), '0'), '.') }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
+                                        <a href="{{ route('reports.inventory.adjustment.create', $product) }}" class="font-medium text-red-600 hover:text-red-700">
+                                            {{ __('app.reports.inventory.adjustment') }}
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
