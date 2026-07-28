@@ -9,6 +9,7 @@ return [
         'monthly' => 'Bulanan',
         'yearly' => 'Tahunan',
         'products' => 'Produk',
+        'payment_types' => 'Jenis Bayaran',
         'customers' => 'Pelanggan',
         'inventory' => 'Inventori',
         'expenses' => 'Perbelanjaan',
@@ -187,6 +188,14 @@ return [
             'no_data' => 'Tiada jualan produk untuk tempoh ini.',
             'product_name' => 'Nama Produk',
             'quantity_sold' => 'Kuantiti Dijual',
+            'total_sales' => 'Jumlah Jualan',
+        ],
+        'payment_types' => [
+            'title' => 'Laporan Jenis Bayaran',
+            'subtitle' => 'Jualan mengikut kaedah bayaran',
+            'no_data' => 'Tiada jualan untuk tempoh ini.',
+            'payment_method' => 'Kaedah Bayaran',
+            'transactions' => 'Bilangan Transaksi',
             'total_sales' => 'Jumlah Jualan',
         ],
         'customers' => [

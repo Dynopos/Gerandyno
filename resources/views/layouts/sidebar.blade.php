@@ -70,6 +70,17 @@
             {{ __('app.nav.products') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('reports.payment-types.index')" :active="request()->routeIs('reports.payment-types.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <rect x="2.5" y="6" width="19" height="12" rx="2" />
+                    <path d="M2.5 10h19" />
+                    <path d="M6 15h4" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.payment_types') }}
+        </x-sidebar-link>
+
         <x-sidebar-link :href="route('reports.customers.index')" :active="request()->routeIs('reports.customers.*')">
             <x-slot name="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">

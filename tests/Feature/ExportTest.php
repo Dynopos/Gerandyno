@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Exports\MonthlyExport;
+use App\Exports\PaymentTypesExport;
 use App\Exports\ProductsExport;
 use App\Exports\SalesExport;
 use App\Exports\YearlyExport;
 use App\Models\Company;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
@@ -294,5 +296,57 @@ class ExportTest extends TestCase
         $response = $this->actingAs($admin)->get('/reports/sales/export/csv');
 
         $response->assertForbidden();
+    }
+
+    public function test_payment_types_export_is_scoped_to_own_company(): void
+    {
+        Excel::fake();
+
+        [$user, $company, $account] = $this->makeCustomer();
+        [, $companyB, $accountB] = $this->makeCustomer();
+
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+        Payment::factory()->create(['receipt_id' => $receipt->id, 'payment_method' => 'cash', 'amount' => 50]);
+
+        $receiptB = Receipt::factory()->create([
+            'company_id' => $companyB->id,
+            'salesplay_account_id' => $accountB->id,
+            'transaction_date' => now(),
+        ]);
+        Payment::factory()->create(['receipt_id' => $receiptB->id, 'payment_method' => 'boost', 'amount' => 999]);
+
+        $response = $this->actingAs($user)->get('/reports/payment-types/export/csv?filter=this_month');
+
+        $response->assertOk();
+
+        $filename = 'laporan-jenis-bayaran-'.Str::slug(__('app.filters.this_month')).'-'.now()->format('Y-m-d').'.csv';
+
+        Excel::assertDownloaded($filename, function (PaymentTypesExport $export) {
+            $paymentTypes = $export->collection();
+
+            return $paymentTypes->count() === 1
+                && $paymentTypes->first()['payment_method'] === 'cash';
+        });
+    }
+
+    public function test_payment_types_pdf_export_downloads(): void
+    {
+        [$user, $company, $account] = $this->makeCustomer();
+
+        $receipt = Receipt::factory()->create([
+            'company_id' => $company->id,
+            'salesplay_account_id' => $account->id,
+            'transaction_date' => now(),
+        ]);
+        Payment::factory()->create(['receipt_id' => $receipt->id, 'payment_method' => 'cash', 'amount' => 50]);
+
+        $response = $this->actingAs($user)->get('/reports/payment-types/export/pdf?filter=this_month');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
     }
 }
