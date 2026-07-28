@@ -137,6 +137,16 @@
             </x-slot>
             {{ __('app.admin.nav.salesplay_accounts') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('admin.import.create')" :active="request()->routeIs('admin.import.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
+                    <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                </svg>
+            </x-slot>
+            {{ __('app.admin.nav.import') }}
+        </x-sidebar-link>
     @endif
 </nav>
 
