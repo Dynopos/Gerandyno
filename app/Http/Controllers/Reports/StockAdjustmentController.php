@@ -7,27 +7,35 @@ use App\Models\Product;
 use App\Models\StockAdjustment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class StockAdjustmentController extends Controller
 {
-    public function create(Product $product): View
+    public function create(): View
     {
+        $products = Product::query()->orderBy('name')->get(['id', 'name', 'sku']);
+
         return view('reports.inventory.adjustment', [
-            'product' => $product,
+            'products' => $products,
         ]);
     }
 
-    public function store(Request $request, Product $product): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'product_id' => [
+                'required',
+                Rule::exists('products', 'id')->where('company_id', $request->user()->company_id),
+            ],
             'quantity' => ['required', 'numeric', 'min:0'],
             'adjusted_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $product = Product::findOrFail($validated['product_id']);
+
         StockAdjustment::create($validated + [
-            'product_id' => $product->id,
             'created_by' => $request->user()->id,
         ]);
 
