@@ -124,6 +124,16 @@
             </x-slot>
             {{ __('app.nav.pnl') }}
         </x-sidebar-link>
+
+        <x-sidebar-link :href="route('reports.shifts.index')" :active="request()->routeIs('reports.shifts.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <circle cx="12" cy="12" r="8.25" />
+                    <path d="M12 7.5V12l3 2" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.shifts') }}
+        </x-sidebar-link>
     @endif
 
     @if (Auth::user()->isAdmin())
