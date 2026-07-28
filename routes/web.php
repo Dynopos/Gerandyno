@@ -14,7 +14,6 @@ use App\Http\Controllers\Reports\PaymentTypeReportController;
 use App\Http\Controllers\Reports\PnlReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
-use App\Http\Controllers\Reports\ShiftController;
 use App\Http\Controllers\Reports\StockAdjustmentController;
 use App\Http\Controllers\Reports\YearlyReportController;
 use Illuminate\Support\Facades\Route;
@@ -53,9 +52,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/pnl', [PnlReportController::class, 'index'])->name('pnl');
         Route::get('/pnl/export/{format}', [PnlReportController::class, 'export'])->name('pnl.export');
         Route::post('/pnl/email', [PnlReportController::class, 'email'])->middleware('throttle:6,1')->name('pnl.email');
-        Route::get('/shifts', [ShiftController::class, 'index'])->name('shifts.index');
-        Route::post('/shifts/start', [ShiftController::class, 'start'])->name('shifts.start');
-        Route::post('/shifts/end', [ShiftController::class, 'end'])->name('shifts.end');
     });
 
     Route::middleware('company')->group(function () {
