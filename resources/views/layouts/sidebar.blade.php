@@ -149,6 +149,17 @@
             {{ __('app.admin.nav.salesplay_accounts') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('admin.customers.create')" :active="request()->routeIs('admin.customers.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <circle cx="9" cy="8" r="3.25" />
+                    <path d="M2.75 20a6.25 6.25 0 0112.5 0" />
+                    <path d="M18 8v6M15 11h6" />
+                </svg>
+            </x-slot>
+            {{ __('app.admin.nav.customers') }}
+        </x-sidebar-link>
+
         <x-sidebar-link :href="route('admin.import.create')" :active="request()->routeIs('admin.import.*')">
             <x-slot name="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
