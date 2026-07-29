@@ -8,7 +8,7 @@
                 name="q"
                 value="{{ $search }}"
                 placeholder="{{ __('app.reports.customers.search_placeholder') }}"
-                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-gold-500 focus:ring-gold-500"
+                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500"
             >
         </form>
 
@@ -34,7 +34,7 @@
                                     onclick="window.location='{{ route('reports.customers.show', $customer) }}'"
                                 >
                                     <td class="whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-900">
-                                        <a href="{{ route('reports.customers.show', $customer) }}" class="hover:text-gold-600">
+                                        <a href="{{ route('reports.customers.show', $customer) }}" class="hover:text-violet-600">
                                             {{ $customer->name }}
                                         </a>
                                     </td>

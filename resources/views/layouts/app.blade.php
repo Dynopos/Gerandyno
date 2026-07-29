@@ -27,14 +27,14 @@
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 @click="sidebarOpen = false"
-                class="fixed inset-0 z-40 bg-black/60 lg:hidden"
+                class="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
                 style="display: none;"
             ></div>
 
             <!-- Sidebar -->
             <aside
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-                class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-neutral-950 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0"
+                class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0"
             >
                 @include('layouts.sidebar')
             </aside>

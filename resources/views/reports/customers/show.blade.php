@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('reports.customers.index') }}" class="font-medium text-gold-600 hover:text-gold-700">{!! __('app.reports.customers.back_to_list') !!}</a>
+            <a href="{{ route('reports.customers.index') }}" class="font-medium text-violet-600 hover:text-violet-700">{!! __('app.reports.customers.back_to_list') !!}</a>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -13,7 +13,7 @@
                     </svg>
                 </x-slot>
             </x-stat-card>
-            <x-stat-card :label="__('app.reports.customers.total_spent')" :value="\App\Support\Money::format($totalSpent)" color="red">
+            <x-stat-card :label="__('app.reports.customers.total_spent')" :value="\App\Support\Money::format($totalSpent)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="2.5" y="6" width="19" height="12" rx="2" />

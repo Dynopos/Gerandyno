@@ -50,7 +50,7 @@
             id="description"
             name="description"
             rows="3"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
         >{{ old('description', $expense?->description) }}</textarea>
         <x-input-error :messages="$errors->get('description')" class="mt-2" />
     </div>
@@ -60,7 +60,7 @@
     <a href="{{ route('expenses.index') }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition hover:bg-gray-50">
         {{ __('app.expenses.cancel') }}
     </a>
-    <x-primary-button class="bg-gold-600 hover:bg-gold-700 focus:bg-gold-700 focus:ring-gold-500">
+    <x-primary-button>
         {{ __('app.expenses.save') }}
     </x-primary-button>
 </div>

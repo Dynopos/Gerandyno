@@ -11,7 +11,7 @@
                 href="{{ route($routeName, ['filter' => $key]) }}"
                 @class([
                     'rounded-lg px-3 py-1.5 text-sm font-medium transition',
-                    'bg-gold-600 text-white shadow-sm' => $period->key === $key,
+                    'bg-violet-600 text-white shadow-sm' => $period->key === $key,
                     'text-slate-600 hover:bg-slate-100' => $period->key !== $key,
                 ])
             >
@@ -26,16 +26,16 @@
             type="date"
             name="from"
             value="{{ $period->key === 'custom' ? $period->start->format('Y-m-d') : '' }}"
-            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-gold-500 focus:ring-gold-500"
+            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-violet-500 focus:ring-violet-500"
         >
         <span class="text-slate-400">&ndash;</span>
         <input
             type="date"
             name="to"
             value="{{ $period->key === 'custom' ? $period->end->format('Y-m-d') : '' }}"
-            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-gold-500 focus:ring-gold-500"
+            class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-violet-500 focus:ring-violet-500"
         >
-        <button type="submit" class="rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-gold-700">
+        <button type="submit" class="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700">
             {{ __('app.filters.apply') }}
         </button>
     </form>

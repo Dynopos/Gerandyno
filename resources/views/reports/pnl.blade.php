@@ -66,8 +66,8 @@
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b-2 border-gold-600 px-6 py-5">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gold-600">DynoPOS Cloud Report</p>
+            <div class="border-b-2 border-violet-600 px-6 py-5">
+                <p class="text-xs font-semibold uppercase tracking-wide text-violet-600">DynoPOS Cloud Report</p>
                 <h2 class="mt-1 text-lg font-semibold text-slate-900">{{ auth()->user()->company->name }}</h2>
                 <p class="mt-0.5 text-sm text-slate-500">{{ __('app.reports.pnl.title') }} &mdash; {{ $period->label }}</p>
             </div>

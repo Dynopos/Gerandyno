@@ -2,14 +2,19 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
 
         {{-- Welcome banner --}}
-        <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-neutral-900 to-neutral-700 px-6 py-8 text-white shadow-sm sm:px-8">
-            <p class="text-sm font-medium text-gold-200">{{ now()->translatedFormat('l, d F Y') }}</p>
-            <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
-                {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
-            </h1>
-            @if (auth()->user()->company)
-                <p class="mt-2 text-sm text-gold-200">{{ auth()->user()->company->name }}</p>
-            @endif
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 px-6 py-8 text-white shadow-lg shadow-violet-500/20 sm:px-8">
+            <div class="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-white/10"></div>
+            <div class="pointer-events-none absolute -bottom-20 right-24 h-40 w-40 rounded-full bg-white/5"></div>
+
+            <div class="relative">
+                <p class="text-sm font-medium text-white/80">{{ now()->translatedFormat('l, d F Y') }}</p>
+                <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
+                    {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
+                </h1>
+                @if (auth()->user()->company)
+                    <p class="mt-2 text-sm text-white/80">{{ auth()->user()->company->name }}</p>
+                @endif
+            </div>
         </div>
 
         {{-- Stat cards --}}
@@ -19,7 +24,7 @@
                 :value="\App\Support\Money::format($todaySales)"
                 :delta="$todayDelta"
                 :deltaLabel="__('app.dashboard.vs_yesterday')"
-                color="red"
+                color="violet"
             >
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
@@ -67,6 +72,7 @@
                 <div class="mt-4 h-64">
                     <canvas
                         data-chart="line"
+                        data-color="violet"
                         data-labels="{{ $dailySales->pluck('label')->toJson() }}"
                         data-values="{{ $dailySales->pluck('total')->toJson() }}"
                     ></canvas>
@@ -79,6 +85,7 @@
                 <div class="mt-4 h-64">
                     <canvas
                         data-chart="bar"
+                        data-color="teal"
                         data-labels="{{ $monthlySales->pluck('label')->toJson() }}"
                         data-values="{{ $monthlySales->pluck('total')->toJson() }}"
                     ></canvas>
@@ -91,7 +98,7 @@
             <div class="rounded-2xl border border-slate-200 bg-white shadow-sm lg:col-span-2">
                 <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                     <h2 class="text-sm font-semibold text-slate-900">{{ __('app.dashboard.recent_receipts') }}</h2>
-                    <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-gold-600 hover:text-gold-700">
+                    <a href="{{ route('reports.sales.index') }}" class="text-sm font-medium text-violet-600 hover:text-violet-700">
                         {!! __('app.dashboard.view_all') !!}
                     </a>
                 </div>
@@ -126,6 +133,16 @@
                 <h2 class="text-sm font-semibold text-slate-900">{{ __('app.dashboard.top_categories') }}</h2>
                 <p class="text-xs text-slate-500">{{ __('app.dashboard.this_month') }}</p>
 
+                @php
+                    $barColors = [
+                        'from-violet-500 to-purple-600',
+                        'from-sky-500 to-blue-600',
+                        'from-teal-400 to-emerald-500',
+                        'from-amber-400 to-orange-500',
+                        'from-pink-500 to-rose-500',
+                    ];
+                @endphp
+
                 <div class="mt-4 space-y-4">
                     @forelse ($topCategories as $category)
                         <div>
@@ -134,7 +151,7 @@
                                 <span class="shrink-0 text-slate-500">{{ number_format($category['percentage'], 0) }}%</span>
                             </div>
                             <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div class="h-full rounded-full bg-gradient-to-r from-red-600 to-orange-500" style="width: {{ $category['percentage'] }}%"></div>
+                                <div class="h-full rounded-full bg-gradient-to-r {{ $barColors[$loop->index % count($barColors)] }}" style="width: {{ $category['percentage'] }}%"></div>
                             </div>
                         </div>
                     @empty
