@@ -122,7 +122,6 @@ return [
             'title' => 'Add Customer',
             'subtitle' => 'Create a company, SalesPlay account, and customer login in one step',
             'company_name' => 'Company/Shop Name',
-            'shop_name' => 'Shop Name (SalesPlay)',
             'shop_id' => 'SalesPlay Shop ID',
             'shop_id_hint' => "Leave blank if you can't find it yet — it can be added later on the SalesPlay Account.",
             'api_token' => 'SalesPlay API Token',

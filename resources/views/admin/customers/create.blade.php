@@ -13,12 +13,6 @@
                 </div>
 
                 <div>
-                    <x-input-label for="shop_name" :value="__('app.admin.customers.shop_name')" />
-                    <x-text-input id="shop_name" name="shop_name" type="text" class="mt-1 block w-full" :value="old('shop_name')" required />
-                    <x-input-error :messages="$errors->get('shop_name')" class="mt-2" />
-                </div>
-
-                <div>
                     <x-input-label for="salesplay_shop_id" :value="__('app.admin.customers.shop_id')" />
                     <x-text-input id="salesplay_shop_id" name="salesplay_shop_id" type="text" class="mt-1 block w-full" :value="old('salesplay_shop_id')" />
                     <p class="mt-1 text-xs text-slate-500">{{ __('app.admin.customers.shop_id_hint') }}</p>
