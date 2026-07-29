@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\CompanyUserController;
+use App\Http\Controllers\Admin\SalesplayAccountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
@@ -32,6 +35,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/products', [ProductReportController::class, 'index'])->name('products');
         Route::get('/products/export/{format}', [ProductReportController::class, 'export'])->name('products.export');
         Route::post('/products/email', [ProductReportController::class, 'email'])->middleware('throttle:6,1')->name('products.email');
+    });
+
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('companies', CompanyController::class)->except(['show', 'destroy']);
+        Route::post('companies/{company}/users', [CompanyUserController::class, 'store'])->name('companies.users.store');
+        Route::delete('companies/{company}/users/{user}', [CompanyUserController::class, 'destroy'])->name('companies.users.destroy');
+        Route::resource('salesplay-accounts', SalesplayAccountController::class)->except(['show', 'destroy']);
     });
 });
 

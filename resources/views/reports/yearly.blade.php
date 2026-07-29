@@ -7,7 +7,7 @@
         </x-page-header>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <x-stat-card :label="__('app.reports.yearly.grand_total')" :value="\App\Support\Money::format($grandTotal)" color="red">
+            <x-stat-card :label="__('app.reports.yearly.grand_total')" :value="\App\Support\Money::format($grandTotal)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="2.5" y="6" width="19" height="12" rx="2" />
@@ -49,7 +49,7 @@
                                         <x-money :amount="$row['total']" />
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
-                                        <a href="{{ route('reports.monthly', ['year' => $row['year']]) }}" class="font-medium text-red-600 hover:text-red-700">
+                                        <a href="{{ route('reports.monthly', ['year' => $row['year']]) }}" class="font-medium text-violet-600 hover:text-violet-700">
                                             {!! __('app.reports.yearly.view_monthly') !!}
                                         </a>
                                     </td>

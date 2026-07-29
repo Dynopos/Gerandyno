@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex items-center gap-2 text-sm">
-            <a href="{{ route('reports.sales.index') }}" class="font-medium text-red-600 hover:text-red-700">{!! __('app.reports.sales.back_to_list') !!}</a>
+            <a href="{{ route('reports.sales.index') }}" class="font-medium text-violet-600 hover:text-violet-700">{!! __('app.reports.sales.back_to_list') !!}</a>
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

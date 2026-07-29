@@ -29,7 +29,7 @@ This repository is being built in phases. Current status:
       command, scheduler.
 - [x] **Phase 3** — Dashboard and reports.
 - [x] **Phase 4** — CSV/Excel export.
-- [ ] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
+- [x] **Phase 5** — Admin panel (`/admin/companies`, `/admin/salesplay-accounts`).
 
 ## Installation
 
@@ -158,8 +158,29 @@ no other code changes needed.
 Each `salesplay_accounts` row has its own `api_token`, stored using Laravel's
 `encrypted` Eloquent cast (backed by `APP_KEY`) and hidden from all model
 serialization — the token is never returned in any API/JSON response once
-saved. Tokens are managed per-account in the admin panel (Phase 5), not in
-`.env`.
+saved. Tokens are managed per-account in the admin panel, not in `.env`.
+
+## Admin panel
+
+Users with `role = admin` (no `company_id`) land on `/admin/companies` instead
+of the customer dashboard. The panel is guarded by the `admin` middleware, and
+the `CompanyScope` global scope is bypassed for admins so they see every
+tenant's records.
+
+- **`/admin/companies`** — list every company, create one, edit its name and
+  active/inactive status.
+- **Company edit page** — also provisions customer users for that company
+  (they are created pre-verified, so they can log in with the credentials the
+  admin hands over) and lists the company's SalesPlay accounts.
+- **`/admin/salesplay-accounts`** — list every shop across all companies with
+  its sync toggle, `last_synced_at`, and last sync result; create and edit
+  accounts.
+
+API tokens are write-only: the field is blank on the edit form and the stored
+token is never rendered back into the page. Submitting the form with the token
+field empty keeps the existing token; typing a new one replaces it. Setting an
+account's status to inactive takes it out of the `salesplay:sync` run without
+deleting its history.
 
 ## Running a manual sync
 

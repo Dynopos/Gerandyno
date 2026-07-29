@@ -58,13 +58,12 @@ class DashboardTest extends TestCase
         $response->assertDontSee('RM 999.00');
     }
 
-    public function test_admin_sees_placeholder_instead_of_a_companys_dashboard(): void
+    public function test_admin_is_redirected_to_the_admin_panel(): void
     {
         $admin = User::factory()->admin()->create();
 
-        $response = $this->actingAs($admin)->get('/dashboard');
-
-        $response->assertOk();
-        $response->assertSee('Panel Admin akan datang');
+        $this->actingAs($admin)
+            ->get('/dashboard')
+            ->assertRedirect(route('admin.companies.index'));
     }
 }

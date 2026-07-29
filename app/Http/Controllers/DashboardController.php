@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Receipt;
 use App\Support\Reports\SalesReportService;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,12 +15,12 @@ class DashboardController extends Controller
         private readonly SalesReportService $reports,
     ) {}
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
 
         if ($user->isAdmin()) {
-            return view('dashboard-admin');
+            return redirect()->route('admin.companies.index');
         }
 
         $today = CarbonImmutable::today();

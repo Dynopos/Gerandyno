@@ -9,7 +9,7 @@
         <x-period-filter :period="$period" route-name="reports.sales.index" />
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <x-stat-card :label="__('app.reports.sales.total_sales', ['period' => $period->label])" :value="\App\Support\Money::format($periodTotal)" color="red">
+            <x-stat-card :label="__('app.reports.sales.total_sales', ['period' => $period->label])" :value="\App\Support\Money::format($periodTotal)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="2.5" y="6" width="19" height="12" rx="2" />
@@ -52,7 +52,7 @@
                                         {{ $receipt->transaction_date->translatedFormat('d M Y, h:i A') }}
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm font-medium text-slate-900">
-                                        <a href="{{ route('reports.sales.show', $receipt) }}" class="hover:text-red-600">
+                                        <a href="{{ route('reports.sales.show', $receipt) }}" class="hover:text-violet-600">
                                             {{ $receipt->receipt_number ?? '#'.$receipt->id }}
                                         </a>
                                     </td>

@@ -41,7 +41,7 @@
             <button
                 type="submit"
                 :disabled="sending"
-                class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
+                class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:from-violet-600 hover:to-purple-700 disabled:opacity-60"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                     <rect x="3" y="5" width="18" height="14" rx="2" />
