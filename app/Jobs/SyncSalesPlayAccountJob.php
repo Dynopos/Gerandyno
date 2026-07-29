@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -35,6 +36,23 @@ class SyncSalesPlayAccountJob implements ShouldQueue
 
     public function handle(SalesPlaySyncService $syncService): void
     {
+        // Guards against two syncs for the same account racing each other —
+        // e.g. the scheduled run and someone clicking "Sync Now" at the same
+        // moment, or an impatient admin clicking it several times in a row.
+        // Without this, both attempts pass the "does this receipt already
+        // exist" check before either has committed, then collide on the
+        // database's unique constraint when they both try to insert it.
+        $lock = Cache::lock("salesplay-sync-account-{$this->account->id}", 300);
+
+        if (! $lock->get()) {
+            Log::info('SalesPlay sync skipped: already in progress', [
+                'salesplay_account_id' => $this->account->id,
+                'company_id' => $this->account->company_id,
+            ]);
+
+            return;
+        }
+
         try {
             $result = $syncService->sync($this->account);
 
@@ -57,6 +75,8 @@ class SyncSalesPlayAccountJob implements ShouldQueue
             ]);
 
             throw $e;
+        } finally {
+            $lock->release();
         }
     }
 }

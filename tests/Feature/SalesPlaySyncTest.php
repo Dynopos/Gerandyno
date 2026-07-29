@@ -25,6 +25,7 @@ use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use App\Services\SalesPlay\SalesPlaySyncService;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /**
@@ -381,6 +382,48 @@ class SalesPlaySyncTest extends TestCase
         $this->assertSame('failed', $badAccount->last_sync_status);
         $this->assertSame(1, Receipt::withoutGlobalScopes()->where('salesplay_account_id', $goodAccount->id)->count());
         $this->assertSame(0, Receipt::withoutGlobalScopes()->where('salesplay_account_id', $badAccount->id)->count());
+    }
+
+    public function test_job_skips_instead_of_racing_when_a_sync_is_already_in_progress(): void
+    {
+        // Reproduces the "wardini ikan bakar" bug: clicking Sync Now while a
+        // scheduled sync (or another click) is already running for the same
+        // account let two runs pass the "does this receipt exist" check
+        // before either had committed, then collide inserting it — crashing
+        // before last_synced_at was ever set. The job should now see the
+        // lock held and skip cleanly instead of racing.
+        $account = SalesplayAccount::factory()->create([
+            'last_synced_at' => null,
+            'last_sync_status' => null,
+        ]);
+
+        $fake = new class($this->makeReceipt('rcpt-1')) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayStockData;
+
+            public function __construct(private SalesPlayReceiptData $receipt) {}
+
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            {
+                return new SalesPlayReceiptPage(items: [$this->receipt], hasMore: false, nextCursor: null);
+            }
+        };
+
+        $this->app->bind(SalesPlayApiClientInterface::class, fn () => $fake);
+
+        $lock = Cache::lock("salesplay-sync-account-{$account->id}", 300);
+        $this->assertTrue($lock->get());
+
+        try {
+            SyncSalesPlayAccountJob::dispatchSync($account);
+        } finally {
+            $lock->release();
+        }
+
+        $account->refresh();
+        $this->assertNull($account->last_synced_at);
+        $this->assertNull($account->last_sync_status);
+        $this->assertSame(0, Receipt::withoutGlobalScopes()->where('salesplay_account_id', $account->id)->count());
     }
 
     public function test_sync_refreshes_product_stock_levels(): void
