@@ -42,9 +42,12 @@ class CustomerController extends Controller
             'api_token' => ['required', 'string'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'customer_password' => ['nullable', 'string', 'min:8'],
         ]);
 
-        $user = DB::transaction(function () use ($validated): User {
+        $manualPassword = $validated['customer_password'] ?? null;
+
+        $user = DB::transaction(function () use ($validated, $manualPassword): User {
             $company = Company::create(['name' => $validated['company_name'], 'status' => 'active']);
 
             SalesplayAccount::create([
@@ -55,18 +58,32 @@ class CustomerController extends Controller
                 'status' => 'active',
             ]);
 
-            return User::create([
+            $user = User::create([
                 'company_id' => $company->id,
                 'name' => $validated['customer_name'],
                 'email' => $validated['customer_email'],
-                'password' => Str::random(40),
+                'password' => $manualPassword ?? Str::random(40),
                 'role' => 'customer',
             ]);
+
+            // email_verified_at isn't mass-assignable on User, so set it
+            // separately — harmless either way since User doesn't implement
+            // MustVerifyEmail, but keeps the record accurate.
+            $user->forceFill(['email_verified_at' => now()])->save();
+
+            return $user;
         });
 
-        SendCustomerInviteEmail::dispatch($user);
+        // Only the email-invite path needs a password-reset link — when the
+        // admin sets a password directly, the customer already has usable
+        // credentials and doesn't depend on mail delivery to log in.
+        if ($manualPassword === null) {
+            SendCustomerInviteEmail::dispatch($user);
+        }
 
         return redirect()->route('admin.customers.create')
-            ->with('status', __('app.admin.customers.created', ['name' => $validated['customer_name']]));
+            ->with('status', $manualPassword === null
+                ? __('app.admin.customers.created', ['name' => $validated['customer_name']])
+                : __('app.admin.customers.created_with_password', ['name' => $validated['customer_name']]));
     }
 }

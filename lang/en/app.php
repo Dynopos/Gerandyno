@@ -111,9 +111,12 @@ return [
             'customer_name' => 'Customer Name',
             'customer_email' => 'Customer Email',
             'customer_email_hint' => 'This becomes the customer login — they will get an email to set their password.',
+            'customer_password' => 'Password (Optional)',
+            'customer_password_hint' => "Leave blank to send the customer an automatic password-setup email. Fill in if you'd rather set the password directly (at least 8 characters) and tell the customer yourself — no email will be sent.",
             'submit' => 'Create Customer',
             'cancel' => 'Cancel',
             'created' => 'Customer ":name" has been created. A password-setup email has been sent.',
+            'created_with_password' => 'Customer ":name" has been created with the password you set.',
         ],
         'import' => [
             'title' => 'Import Customers',

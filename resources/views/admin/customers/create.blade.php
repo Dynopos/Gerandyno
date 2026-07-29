@@ -43,6 +43,13 @@
                     <p class="mt-1 text-xs text-slate-500">{{ __('app.admin.customers.customer_email_hint') }}</p>
                     <x-input-error :messages="$errors->get('customer_email')" class="mt-2" />
                 </div>
+
+                <div>
+                    <x-input-label for="customer_password" :value="__('app.admin.customers.customer_password')" />
+                    <x-text-input id="customer_password" name="customer_password" type="password" autocomplete="new-password" class="mt-1 block w-full" />
+                    <p class="mt-1 text-xs text-slate-500">{{ __('app.admin.customers.customer_password_hint') }}</p>
+                    <x-input-error :messages="$errors->get('customer_password')" class="mt-2" />
+                </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-3">

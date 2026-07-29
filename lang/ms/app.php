@@ -111,9 +111,12 @@ return [
             'customer_name' => 'Nama Customer',
             'customer_email' => 'E-mel Customer',
             'customer_email_hint' => 'E-mel ini akan jadi login customer — mereka akan terima e-mel untuk tetapkan password.',
+            'customer_password' => 'Kata Laluan (Pilihan)',
+            'customer_password_hint' => 'Kosongkan untuk hantar e-mel set password automatik kepada customer. Isi kalau anda nak set terus kata laluan (sekurang-kurangnya 8 aksara) dan beritahu customer secara terus — tiada e-mel akan dihantar.',
             'submit' => 'Cipta Customer',
             'cancel' => 'Batal',
             'created' => 'Customer ":name" telah dicipta. E-mel set password telah dihantar.',
+            'created_with_password' => 'Customer ":name" telah dicipta dengan kata laluan yang anda tetapkan.',
         ],
         'import' => [
             'title' => 'Import Customer',
