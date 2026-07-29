@@ -37,7 +37,6 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
-            'shop_name' => ['required', 'string', 'max:255'],
             'salesplay_shop_id' => ['nullable', 'string', 'max:255', Rule::unique('salesplay_accounts', 'salesplay_shop_id')],
             'api_token' => ['required', 'string'],
             'customer_name' => ['required', 'string', 'max:255'],
@@ -52,7 +51,7 @@ class CustomerController extends Controller
 
             SalesplayAccount::create([
                 'company_id' => $company->id,
-                'shop_name' => $validated['shop_name'],
+                'shop_name' => $validated['company_name'],
                 'salesplay_shop_id' => $validated['salesplay_shop_id'] ?: null,
                 'api_token' => $validated['api_token'],
                 'status' => 'active',

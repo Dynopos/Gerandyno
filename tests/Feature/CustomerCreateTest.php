@@ -19,7 +19,6 @@ class CustomerCreateTest extends TestCase
     {
         return array_merge([
             'company_name' => 'Kedai Ali',
-            'shop_name' => 'Kedai Ali Cawangan 1',
             'salesplay_shop_id' => 'shop-001',
             'api_token' => 'token-abc',
             'customer_name' => 'Ali bin Abu',
@@ -38,7 +37,7 @@ class CustomerCreateTest extends TestCase
         $response->assertRedirect('/admin/customers/create');
 
         $this->assertDatabaseHas('companies', ['name' => 'Kedai Ali']);
-        $this->assertDatabaseHas('salesplay_accounts', ['salesplay_shop_id' => 'shop-001', 'shop_name' => 'Kedai Ali Cawangan 1']);
+        $this->assertDatabaseHas('salesplay_accounts', ['salesplay_shop_id' => 'shop-001', 'shop_name' => 'Kedai Ali']);
         $this->assertDatabaseHas('users', ['email' => 'ali@kedaiali.test', 'role' => 'customer']);
 
         $user = User::where('email', 'ali@kedaiali.test')->first();
@@ -82,7 +81,7 @@ class CustomerCreateTest extends TestCase
         $response = $this->actingAs($admin)->post('/admin/customers', $this->payload(['salesplay_shop_id' => '']));
 
         $response->assertRedirect('/admin/customers/create');
-        $this->assertDatabaseHas('salesplay_accounts', ['shop_name' => 'Kedai Ali Cawangan 1', 'salesplay_shop_id' => null]);
+        $this->assertDatabaseHas('salesplay_accounts', ['shop_name' => 'Kedai Ali', 'salesplay_shop_id' => null]);
     }
 
     public function test_customer_email_must_be_unique(): void
@@ -114,7 +113,7 @@ class CustomerCreateTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/admin/customers', []);
 
-        $response->assertSessionHasErrors(['company_name', 'shop_name', 'api_token', 'customer_name', 'customer_email']);
+        $response->assertSessionHasErrors(['company_name', 'api_token', 'customer_name', 'customer_email']);
     }
 
     public function test_non_admin_is_forbidden_from_creating_customers(): void

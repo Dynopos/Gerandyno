@@ -122,7 +122,6 @@ return [
             'title' => 'Tambah Customer',
             'subtitle' => 'Cipta company, akaun SalesPlay dan login customer dalam satu langkah',
             'company_name' => 'Nama Syarikat/Kedai',
-            'shop_name' => 'Nama Kedai (SalesPlay)',
             'shop_id' => 'SalesPlay Shop ID',
             'shop_id_hint' => 'Boleh kosongkan jika tak jumpa buat masa ini — boleh tambah kemudian di SalesPlay Account.',
             'api_token' => 'SalesPlay API Token',
