@@ -68,6 +68,8 @@ class SalesPlaySyncService
             );
 
             foreach ($result->items as $receiptData) {
+                $this->discoverShopId($account, $receiptData);
+
                 if ($this->storeReceipt($account, $receiptData)) {
                     $synced++;
                 } else {
@@ -88,6 +90,29 @@ class SalesPlaySyncService
         $this->syncStockIns($account, $since);
 
         return new SalesPlaySyncResult(synced: $synced, skipped: $skipped);
+    }
+
+    /**
+     * Every SalesPlay receipt carries the shop_id it belongs to, so an
+     * account created without one (the merchant couldn't find it in
+     * SalesPlay's own dashboard) picks it up automatically as soon as its
+     * first receipt syncs — no manual lookup needed. Auth only ever depends
+     * on the API token, so this is purely for completeness/future API
+     * calls that may want it, not a requirement for syncing to work.
+     */
+    private function discoverShopId(SalesplayAccount $account, SalesPlayReceiptData $data): void
+    {
+        if ($account->salesplay_shop_id !== null) {
+            return;
+        }
+
+        $shopId = $data->raw['shop_id'] ?? null;
+
+        if (! is_string($shopId) || $shopId === '') {
+            return;
+        }
+
+        $account->update(['salesplay_shop_id' => $shopId]);
     }
 
     /**

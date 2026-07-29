@@ -163,6 +163,92 @@ class SalesPlaySyncTest extends TestCase
         $this->assertSame('success', $account->last_sync_status);
     }
 
+    public function test_sync_discovers_and_saves_shop_id_from_the_first_receipt(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null, 'salesplay_shop_id' => null]);
+
+        $receipt = $this->makeReceipt('rcpt-1');
+        $receiptWithShopId = new SalesPlayReceiptData(
+            salesplayReceiptId: $receipt->salesplayReceiptId,
+            receiptNumber: $receipt->receiptNumber,
+            transactionDate: $receipt->transactionDate,
+            subtotal: $receipt->subtotal,
+            discount: $receipt->discount,
+            tax: $receipt->tax,
+            total: $receipt->total,
+            paymentStatus: $receipt->paymentStatus,
+            customer: $receipt->customer,
+            items: $receipt->items,
+            payments: $receipt->payments,
+            raw: ['shop_id' => 'discovered-shop-123'],
+        );
+
+        $fake = new class($receiptWithShopId) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayStockData;
+
+            private array $receipts;
+
+            public function __construct(SalesPlayReceiptData ...$receipts)
+            {
+                $this->receipts = $receipts;
+            }
+
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            {
+                return new SalesPlayReceiptPage(items: $this->receipts, hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fake))->sync($account);
+
+        $account->refresh();
+        $this->assertSame('discovered-shop-123', $account->salesplay_shop_id);
+    }
+
+    public function test_sync_does_not_overwrite_an_existing_shop_id(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null, 'salesplay_shop_id' => 'already-known']);
+
+        $receipt = $this->makeReceipt('rcpt-1');
+        $receiptWithShopId = new SalesPlayReceiptData(
+            salesplayReceiptId: $receipt->salesplayReceiptId,
+            receiptNumber: $receipt->receiptNumber,
+            transactionDate: $receipt->transactionDate,
+            subtotal: $receipt->subtotal,
+            discount: $receipt->discount,
+            tax: $receipt->tax,
+            total: $receipt->total,
+            paymentStatus: $receipt->paymentStatus,
+            customer: $receipt->customer,
+            items: $receipt->items,
+            payments: $receipt->payments,
+            raw: ['shop_id' => 'a-different-shop-id'],
+        );
+
+        $fake = new class($receiptWithShopId) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayStockData;
+
+            private array $receipts;
+
+            public function __construct(SalesPlayReceiptData ...$receipts)
+            {
+                $this->receipts = $receipts;
+            }
+
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            {
+                return new SalesPlayReceiptPage(items: $this->receipts, hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fake))->sync($account);
+
+        $account->refresh();
+        $this->assertSame('already-known', $account->salesplay_shop_id);
+    }
+
     public function test_sync_skips_receipts_that_already_exist(): void
     {
         $account = SalesplayAccount::factory()->create(['last_synced_at' => null]);
