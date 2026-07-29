@@ -35,7 +35,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
     private const FIRST_SYNC_PAGES = 3;
 
     public function fetchReceipts(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,
@@ -59,7 +59,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
     }
 
     public function fetchStockLevels(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?string $cursor,
     ): SalesPlayStockLevelPage {
@@ -75,7 +75,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
     }
 
     public function fetchStockIns(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,
@@ -90,7 +90,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
         return new SalesPlayStockInPage(items: $items, hasMore: false, nextCursor: null);
     }
 
-    private function fakeStockIn(string $shopId, ?CarbonInterface $since): SalesPlayStockInData
+    private function fakeStockIn(?string $shopId, ?CarbonInterface $since): SalesPlayStockInData
     {
         $receivedAt = $since
             ? Carbon::instance(fake()->dateTimeBetween($since, 'now'))
@@ -124,7 +124,7 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
         );
     }
 
-    private function fakeReceipt(string $shopId, ?CarbonInterface $since): SalesPlayReceiptData
+    private function fakeReceipt(?string $shopId, ?CarbonInterface $since): SalesPlayReceiptData
     {
         $transactionDate = $since
             ? Carbon::instance(fake()->dateTimeBetween($since, 'now'))

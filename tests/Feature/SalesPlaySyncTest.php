@@ -34,12 +34,12 @@ use Tests\TestCase;
  */
 trait FakesEmptySalesPlayStockData
 {
-    public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+    public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
     {
         return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
     }
 
-    public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+    public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
     {
         return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
     }
@@ -51,7 +51,7 @@ trait FakesEmptySalesPlayStockData
  */
 trait FakesEmptySalesPlayReceipts
 {
-    public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+    public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
     {
         return new SalesPlayReceiptPage(items: [], hasMore: false, nextCursor: null);
     }
@@ -114,7 +114,7 @@ class SalesPlaySyncTest extends TestCase
                 $this->receipts = $receipts;
             }
 
-            public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 return new SalesPlayReceiptPage(items: $this->receipts, hasMore: false, nextCursor: null);
             }
@@ -130,6 +130,36 @@ class SalesPlaySyncTest extends TestCase
 
         $account->refresh();
         $this->assertNotNull($account->last_synced_at);
+        $this->assertSame('success', $account->last_sync_status);
+    }
+
+    public function test_sync_succeeds_for_an_account_with_no_shop_id_set(): void
+    {
+        // salesplay_shop_id is optional at creation (the merchant may not
+        // have found it yet), so the sync layer must tolerate null instead
+        // of crashing with a TypeError against a non-nullable parameter.
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null, 'salesplay_shop_id' => null]);
+
+        $fake = new class implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayStockData;
+
+            public ?string $receivedShopId = 'not called yet';
+
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            {
+                $this->receivedShopId = $shopId;
+
+                return new SalesPlayReceiptPage(items: [], hasMore: false, nextCursor: null);
+            }
+        };
+
+        $result = (new SalesPlaySyncService($fake))->sync($account);
+
+        $this->assertSame(0, $result->synced);
+        $this->assertNull($fake->receivedShopId);
+
+        $account->refresh();
         $this->assertSame('success', $account->last_sync_status);
     }
 
@@ -149,7 +179,7 @@ class SalesPlaySyncTest extends TestCase
 
             public function __construct(private SalesPlayReceiptData $receipt) {}
 
-            public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 return new SalesPlayReceiptPage(items: [$this->receipt], hasMore: false, nextCursor: null);
             }
@@ -175,7 +205,7 @@ class SalesPlaySyncTest extends TestCase
 
             public function __construct(private array $page1, private array $page2) {}
 
-            public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 if ($cursor === null) {
                     return new SalesPlayReceiptPage(items: $this->page1, hasMore: true, nextCursor: 'page-2');
@@ -200,7 +230,7 @@ class SalesPlaySyncTest extends TestCase
         {
             use FakesEmptySalesPlayStockData;
 
-            public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 throw new SalesPlayApiException('SalesPlay is down');
             }
@@ -244,7 +274,7 @@ class SalesPlaySyncTest extends TestCase
 
             public function __construct(private SalesPlayReceiptData $receipt) {}
 
-            public function fetchReceipts(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
             {
                 if ($shopId === 'bad-shop') {
                     throw new SalesPlayApiException('boom');
@@ -282,7 +312,7 @@ class SalesPlaySyncTest extends TestCase
         {
             use FakesEmptySalesPlayReceipts;
 
-            public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
             {
                 return new SalesPlayStockLevelPage(
                     items: [
@@ -294,7 +324,7 @@ class SalesPlaySyncTest extends TestCase
                 );
             }
 
-            public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
             {
                 return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
             }
@@ -360,12 +390,12 @@ class SalesPlaySyncTest extends TestCase
                 private SalesPlayStockInData $duplicate,
             ) {}
 
-            public function fetchStockLevels(string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
             {
                 return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
             }
 
-            public function fetchStockIns(string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
             {
                 return new SalesPlayStockInPage(items: [$this->new, $this->duplicate], hasMore: false, nextCursor: null);
             }
