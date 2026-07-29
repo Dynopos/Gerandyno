@@ -77,7 +77,7 @@ class CustomerImportController extends Controller
             $validator = Validator::make($data, [
                 'company_name' => ['required', 'string', 'max:255'],
                 'shop_name' => ['required', 'string', 'max:255'],
-                'salesplay_shop_id' => ['required', 'string', 'max:255'],
+                'salesplay_shop_id' => ['nullable', 'string', 'max:255'],
                 'api_token' => ['required', 'string'],
                 'customer_name' => ['required', 'string', 'max:255'],
                 'customer_email' => ['required', 'email', 'max:255'],
@@ -95,7 +95,7 @@ class CustomerImportController extends Controller
                 continue;
             }
 
-            if (SalesplayAccount::where('salesplay_shop_id', $data['salesplay_shop_id'])->exists()) {
+            if ($data['salesplay_shop_id'] !== '' && SalesplayAccount::where('salesplay_shop_id', $data['salesplay_shop_id'])->exists()) {
                 $results['skipped'][] = ['row' => $rowNumber, 'reason' => __('app.admin.import.duplicate_shop', ['shop_id' => $data['salesplay_shop_id']])];
 
                 continue;
@@ -107,7 +107,7 @@ class CustomerImportController extends Controller
                 SalesplayAccount::create([
                     'company_id' => $company->id,
                     'shop_name' => $data['shop_name'],
-                    'salesplay_shop_id' => $data['salesplay_shop_id'],
+                    'salesplay_shop_id' => $data['salesplay_shop_id'] !== '' ? $data['salesplay_shop_id'] : null,
                     'api_token' => $data['api_token'],
                     'status' => 'active',
                 ]);

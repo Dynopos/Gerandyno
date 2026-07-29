@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\CompanyUserController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerImportController;
 use App\Http\Controllers\Admin\SalesplayAccountController;
@@ -62,6 +63,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('companies', CompanyController::class)->except('show');
+        Route::get('/companies/{company}/users/create', [CompanyUserController::class, 'create'])->name('companies.users.create');
+        Route::post('/companies/{company}/users', [CompanyUserController::class, 'store'])->name('companies.users.store');
         Route::resource('salesplay-accounts', SalesplayAccountController::class)->except('show');
         Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
         Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
