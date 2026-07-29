@@ -30,19 +30,6 @@
                     <x-text-input id="api_token" name="api_token" type="password" autocomplete="off" class="mt-1 block w-full" required />
                     <x-input-error :messages="$errors->get('api_token')" class="mt-2" />
                 </div>
-
-                <div class="border-t border-slate-100 pt-4">
-                    <x-input-label for="customer_name" :value="__('app.admin.customers.customer_name')" />
-                    <x-text-input id="customer_name" name="customer_name" type="text" class="mt-1 block w-full" :value="old('customer_name')" required />
-                    <x-input-error :messages="$errors->get('customer_name')" class="mt-2" />
-                </div>
-
-                <div>
-                    <x-input-label for="customer_email" :value="__('app.admin.customers.customer_email')" />
-                    <x-text-input id="customer_email" name="customer_email" type="email" class="mt-1 block w-full" :value="old('customer_email')" required />
-                    <p class="mt-1 text-xs text-slate-500">{{ __('app.admin.customers.customer_email_hint') }}</p>
-                    <x-input-error :messages="$errors->get('customer_email')" class="mt-2" />
-                </div>
             </div>
 
             <div class="mt-6 flex items-center justify-end gap-3">
