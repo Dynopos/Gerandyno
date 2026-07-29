@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/inventory', [InventoryReportController::class, 'index'])->name('inventory.index');
         Route::get('/inventory/adjustment', [StockAdjustmentController::class, 'create'])->name('inventory.adjustment.create');
         Route::post('/inventory/adjustment', [StockAdjustmentController::class, 'store'])->name('inventory.adjustment.store');
+        Route::post('/inventory/reset', [StockAdjustmentController::class, 'resetAll'])->name('inventory.reset');
         Route::get('/pnl', [PnlReportController::class, 'index'])->name('pnl');
         Route::get('/pnl/export/{format}', [PnlReportController::class, 'export'])->name('pnl.export');
         Route::post('/pnl/email', [PnlReportController::class, 'email'])->middleware('throttle:6,1')->name('pnl.email');

@@ -237,6 +237,12 @@ return [
             'adjustment_note' => 'Note',
             'adjustment_note_placeholder' => 'e.g. Stock take July 2026',
             'adjustment_saved' => 'Stock balance for :product has been updated.',
+            'reset' => 'Reset Stock',
+            'reset_confirm_title' => 'Reset Current Stock?',
+            'reset_confirm_description' => 'This will set the current stock balance to 0 for ALL products. Stock in/out from this point on will be recalculated starting from zero. This action cannot be undone.',
+            'reset_confirm_button' => 'Yes, Reset Stock',
+            'reset_note' => 'Stock reset to zero',
+            'reset_saved' => 'Stock for all products has been reset to 0.',
         ],
         'pnl' => [
             'title' => 'Profit & Loss Statement',

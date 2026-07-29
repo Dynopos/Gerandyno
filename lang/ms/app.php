@@ -237,6 +237,12 @@ return [
             'adjustment_note' => 'Catatan',
             'adjustment_note_placeholder' => 'cth. Stock take Julai 2026',
             'adjustment_saved' => 'Baki stok :product telah dikemaskini.',
+            'reset' => 'Reset Stok',
+            'reset_confirm_title' => 'Reset Stok Semasa?',
+            'reset_confirm_description' => 'Tindakan ini akan tetapkan baki stok semasa kepada 0 untuk SEMUA produk. Stok masuk dan keluar selepas ini akan dikira semula bermula dari sifar. Tindakan ini tidak boleh dibatalkan.',
+            'reset_confirm_button' => 'Ya, Reset Stok',
+            'reset_note' => 'Reset stok ke sifar',
+            'reset_saved' => 'Stok semua produk telah direset kepada 0.',
         ],
         'pnl' => [
             'title' => 'Penyata Untung Rugi',
