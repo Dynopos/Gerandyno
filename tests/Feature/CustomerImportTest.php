@@ -114,6 +114,25 @@ class CustomerImportTest extends TestCase
         Queue::assertNotPushed(SendCustomerInviteEmail::class);
     }
 
+    public function test_row_with_a_blank_shop_id_still_imports(): void
+    {
+        Queue::fake();
+
+        $admin = User::factory()->admin()->create();
+
+        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            ."Kedai Ali,Kedai Ali Cawangan 1,,token-abc,Ali bin Abu,ali@kedaiali.test\n";
+
+        $response = $this->actingAs($admin)->post('/admin/import', [
+            'file' => $this->csvFile($csv),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('salesplay_accounts', ['shop_name' => 'Kedai Ali Cawangan 1', 'salesplay_shop_id' => null]);
+        $this->assertDatabaseHas('users', ['email' => 'ali@kedaiali.test']);
+        Queue::assertPushed(SendCustomerInviteEmail::class, 1);
+    }
+
     public function test_non_admin_is_forbidden_from_importing(): void
     {
         $company = Company::factory()->create();

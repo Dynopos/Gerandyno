@@ -119,7 +119,7 @@ return [
             'columns_help' => 'The CSV file must have a header row with the following column names:',
             'col_company_name' => "Customer's company name",
             'col_shop_name' => 'SalesPlay shop name',
-            'col_shop_id' => 'SalesPlay Shop ID',
+            'col_shop_id' => 'SalesPlay Shop ID (leave the cell blank if you can\'t find it)',
             'col_api_token' => 'SalesPlay API Token',
             'col_customer_name' => "Customer's full name",
             'col_customer_email' => "Customer's login email",

@@ -119,7 +119,7 @@ return [
             'columns_help' => 'Fail CSV mesti ada baris tajuk (header) dengan nama lajur berikut:',
             'col_company_name' => 'Nama syarikat customer',
             'col_shop_name' => 'Nama kedai SalesPlay',
-            'col_shop_id' => 'SalesPlay Shop ID',
+            'col_shop_id' => 'SalesPlay Shop ID (boleh kosongkan lajur ini jika tak jumpa)',
             'col_api_token' => 'SalesPlay API Token',
             'col_customer_name' => 'Nama penuh customer',
             'col_customer_email' => 'E-mel login customer',
