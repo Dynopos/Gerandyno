@@ -3,7 +3,7 @@
 <div class="space-y-4">
     <div>
         <x-input-label for="company_id" :value="__('app.admin.salesplay_accounts.company')" />
-        <select id="company_id" name="company_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500">
+        <select id="company_id" name="company_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
             @foreach ($companies as $company)
                 <option value="{{ $company->id }}" @selected((int) old('company_id', $account?->company_id) === $company->id)>{{ $company->name }}</option>
             @endforeach
@@ -55,7 +55,7 @@
 
     <div>
         <x-input-label for="status" :value="__('app.admin.salesplay_accounts.status')" />
-        <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500">
+        <select id="status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
             <option value="active" @selected(old('status', $account?->status ?? 'active') === 'active')>{{ __('app.admin.companies.status_active') }}</option>
             <option value="inactive" @selected(old('status', $account?->status) === 'inactive')>{{ __('app.admin.companies.status_inactive') }}</option>
         </select>
@@ -67,7 +67,7 @@
     <a href="{{ route('admin.salesplay-accounts.index') }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition hover:bg-gray-50">
         {{ __('app.admin.salesplay_accounts.cancel') }}
     </a>
-    <x-primary-button class="bg-gold-600 hover:bg-gold-700 focus:bg-gold-700 focus:ring-gold-500">
+    <x-primary-button>
         {{ __('app.admin.salesplay_accounts.save') }}
     </x-primary-button>
 </div>

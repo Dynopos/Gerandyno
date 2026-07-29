@@ -1,13 +1,13 @@
 {{-- Brand --}}
 <div class="flex h-16 shrink-0 items-center justify-between gap-2 px-5">
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-        <span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-white/10">
+        <span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-violet-200">
             <img src="{{ asset('images/dynopos-logo.jpg') }}" alt="DynoPOS" class="h-full w-full scale-125 object-cover">
         </span>
-        <span class="text-lg font-semibold tracking-tight text-white">DynoPOS</span>
+        <span class="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-lg font-semibold tracking-tight text-transparent">DynoPOS</span>
     </a>
 
-    <button @click="sidebarOpen = false" class="text-neutral-500 hover:text-white lg:hidden" aria-label="{{ __('app.nav.close_menu') }}">
+    <button @click="sidebarOpen = false" class="text-slate-400 hover:text-slate-600 lg:hidden" aria-label="{{ __('app.nav.close_menu') }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
             <path d="M6 6l12 12M18 6L6 18" />
         </svg>
@@ -27,7 +27,7 @@
     </x-sidebar-link>
 
     @if (Auth::user()->company_id)
-        <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">{{ __('app.nav.reports') }}</p>
+        <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ __('app.nav.reports') }}</p>
 
         <x-sidebar-link :href="route('reports.sales.index')" :active="request()->routeIs('reports.sales.*')">
             <x-slot name="icon">
@@ -127,7 +127,7 @@
     @endif
 
     @if (Auth::user()->isAdmin())
-        <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">{{ __('app.admin.nav.section') }}</p>
+        <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ __('app.admin.nav.section') }}</p>
 
         <x-sidebar-link :href="route('admin.companies.index')" :active="request()->routeIs('admin.companies.*')">
             <x-slot name="icon">
@@ -173,14 +173,14 @@
 </nav>
 
 {{-- User / logout --}}
-<div class="shrink-0 border-t border-neutral-800 p-3">
-    <div class="flex items-center gap-3 rounded-xl bg-neutral-800/60 p-3">
-        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-600 text-sm font-semibold text-white">
+<div class="shrink-0 border-t border-slate-200 p-3">
+    <div class="flex items-center gap-3 rounded-xl bg-gradient-to-r from-violet-50 to-pink-50 p-3">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-sm font-semibold text-white">
             {{ Str::of(Auth::user()->name)->substr(0, 1)->upper() }}
         </div>
         <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-            <p class="truncate text-xs text-neutral-400">{{ Auth::user()->company->name ?? 'DynoPOS Admin' }}</p>
+            <p class="truncate text-sm font-medium text-slate-900">{{ Auth::user()->name }}</p>
+            <p class="truncate text-xs text-slate-500">{{ Auth::user()->company->name ?? 'DynoPOS Admin' }}</p>
         </div>
     </div>
 
@@ -197,8 +197,8 @@
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-400 transition hover:bg-neutral-800 hover:text-white">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-neutral-500 group-hover:text-neutral-300">
+            <button type="submit" class="group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-600">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-slate-400 group-hover:text-rose-500">
                     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                     <path d="M16 17l5-5-5-5M21 12H9" />
                 </svg>

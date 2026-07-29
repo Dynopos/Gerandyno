@@ -11,7 +11,7 @@
                 type="submit"
                 @class([
                     'rounded-full px-2.5 py-1 text-xs font-semibold transition',
-                    'bg-gold-600 text-white shadow-sm' => $current === $locale,
+                    'bg-violet-600 text-white shadow-sm' => $current === $locale,
                     'text-slate-500 hover:text-slate-700' => $current !== $locale,
                 ])
             >

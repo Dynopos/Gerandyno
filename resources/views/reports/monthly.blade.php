@@ -4,7 +4,7 @@
             <x-slot name="actions">
                 <select
                     onchange="window.location = this.value"
-                    class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-gold-500 focus:ring-gold-500"
+                    class="rounded-lg border-slate-300 text-sm text-slate-700 focus:border-violet-500 focus:ring-violet-500"
                 >
                     @foreach ($availableYears as $availableYear)
                         <option value="{{ route('reports.monthly', ['year' => $availableYear]) }}" @selected($availableYear === $year)>
@@ -18,7 +18,7 @@
         </x-page-header>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <x-stat-card :label="__('app.reports.monthly.total_sales', ['year' => $year])" :value="\App\Support\Money::format($yearTotal)" color="red">
+            <x-stat-card :label="__('app.reports.monthly.total_sales', ['year' => $year])" :value="\App\Support\Money::format($yearTotal)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <rect x="2.5" y="6" width="19" height="12" rx="2" />
@@ -42,6 +42,7 @@
             <div class="mt-4 h-64">
                 <canvas
                     data-chart="bar"
+                    data-color="orange"
                     data-labels="{{ $months->pluck('label')->toJson() }}"
                     data-values="{{ $months->pluck('total')->toJson() }}"
                 ></canvas>

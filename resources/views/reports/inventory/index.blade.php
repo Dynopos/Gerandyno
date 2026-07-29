@@ -14,7 +14,7 @@
                     {{ __('app.reports.inventory.reset') }}
                 </button>
 
-                <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-gold-700">
+                <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-violet-700">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                         <path d="M4 4v5h5M20 20v-5h-5" />
                         <path d="M5.5 9a7 7 0 0112.6-2.5M18.5 15a7 7 0 01-12.6 2.5" />
@@ -61,7 +61,7 @@
                 name="q"
                 value="{{ $search }}"
                 placeholder="{{ __('app.reports.inventory.search_placeholder') }}"
-                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-gold-500 focus:ring-gold-500"
+                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500"
             >
         </form>
 

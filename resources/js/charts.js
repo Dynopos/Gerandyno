@@ -23,8 +23,13 @@ Chart.register(
     Tooltip,
 );
 
-const SERIES_COLOR = '#dc2626'; // red-600 — matches the rest of the app's branding
-const SERIES_FILL = 'rgba(220, 38, 38, 0.08)'; // red-600 wash, for line/area charts
+const PALETTE = {
+    violet: { line: '#8b5cf6', fill: 'rgba(139, 92, 246, 0.12)' },
+    blue: { line: '#0ea5e9', fill: 'rgba(14, 165, 233, 0.12)' },
+    teal: { line: '#14b8a6', fill: 'rgba(20, 184, 166, 0.12)' },
+    orange: { line: '#f59e0b', fill: 'rgba(245, 158, 11, 0.14)' },
+    pink: { line: '#ec4899', fill: 'rgba(236, 72, 153, 0.12)' },
+};
 const MUTED_TEXT = '#94a3b8'; // slate-400
 const GRIDLINE = '#e2e8f0'; // slate-200
 
@@ -45,6 +50,7 @@ function buildChart(canvas) {
     const labels = JSON.parse(canvas.dataset.labels);
     const values = JSON.parse(canvas.dataset.values);
     const isLine = type === 'line';
+    const { line: SERIES_COLOR, fill: SERIES_FILL } = PALETTE[canvas.dataset.color] ?? PALETTE.violet;
 
     return new Chart(canvas, {
         type,

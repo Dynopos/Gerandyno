@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.expenses.title')" :subtitle="__('app.expenses.subtitle')">
             <x-slot name="actions">
-                <a href="{{ route('expenses.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-gold-700">
+                <a href="{{ route('expenses.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-violet-700">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                         <path d="M12 5v14M5 12h14" />
                     </svg>
@@ -13,7 +13,7 @@
 
         <x-period-filter :period="$period" route-name="expenses.index" />
 
-        <x-stat-card :label="__('app.expenses.total_for_period', ['period' => $period->label])" :value="\App\Support\Money::format($total)" color="red">
+        <x-stat-card :label="__('app.expenses.total_for_period', ['period' => $period->label])" :value="\App\Support\Money::format($total)" color="violet">
             <x-slot name="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                     <rect x="2.5" y="6" width="19" height="12" rx="2" />
@@ -34,7 +34,7 @@
                 name="q"
                 value="{{ $search }}"
                 placeholder="{{ __('app.expenses.search_placeholder') }}"
-                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-gold-500 focus:ring-gold-500"
+                class="w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-violet-500 focus:ring-violet-500"
             >
         </form>
 
@@ -64,7 +64,7 @@
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
                                         <div class="flex items-center justify-end gap-3">
-                                            <a href="{{ route('expenses.edit', $expense) }}" class="font-medium text-gold-600 hover:text-gold-700">
+                                            <a href="{{ route('expenses.edit', $expense) }}" class="font-medium text-violet-600 hover:text-violet-700">
                                                 {{ __('app.expenses.edit') }}
                                             </a>
                                             <form method="POST" action="{{ route('expenses.destroy', $expense) }}" onsubmit="return confirm('{{ __('app.expenses.delete_confirm') }}')">

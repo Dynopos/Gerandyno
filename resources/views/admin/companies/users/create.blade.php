@@ -31,7 +31,7 @@
                 <a href="{{ route('admin.companies.edit', $company) }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition hover:bg-gray-50">
                     {{ __('app.admin.company_users.cancel') }}
                 </a>
-                <x-primary-button class="bg-gold-600 hover:bg-gold-700 focus:bg-gold-700 focus:ring-gold-500">
+                <x-primary-button>
                     {{ __('app.admin.company_users.submit') }}
                 </x-primary-button>
             </div>

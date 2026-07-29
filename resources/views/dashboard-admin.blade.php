@@ -3,7 +3,7 @@
         <x-page-header :title="__('app.admin.dashboard.title')" :subtitle="__('app.admin.dashboard.description')" />
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <x-stat-card :label="__('app.admin.dashboard.companies')" :value="number_format($companyCount)" color="red">
+            <x-stat-card :label="__('app.admin.dashboard.companies')" :value="number_format($companyCount)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
                         <path d="M4 21V7l8-4 8 4v14" />
@@ -29,7 +29,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <a href="{{ route('admin.companies.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-gold-200 hover:bg-gold-50/40">
+            <a href="{{ route('admin.companies.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:bg-violet-50/40">
                 <div>
                     <p class="text-sm font-semibold text-slate-900">{{ __('app.admin.dashboard.manage_companies') }}</p>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.admin.companies.subtitle') }}</p>
@@ -38,7 +38,7 @@
                     <path d="M9 6l6 6-6 6" />
                 </svg>
             </a>
-            <a href="{{ route('admin.salesplay-accounts.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-gold-200 hover:bg-gold-50/40">
+            <a href="{{ route('admin.salesplay-accounts.index') }}" class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:bg-violet-50/40">
                 <div>
                     <p class="text-sm font-semibold text-slate-900">{{ __('app.admin.dashboard.manage_salesplay_accounts') }}</p>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.admin.salesplay_accounts.subtitle') }}</p>
