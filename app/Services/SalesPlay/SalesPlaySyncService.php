@@ -18,6 +18,7 @@ use App\Services\SalesPlay\DTO\SalesPlayStockLevelData;
 use App\Services\SalesPlay\DTO\SalesPlaySyncResult;
 use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use Carbon\CarbonInterface;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -210,31 +211,39 @@ class SalesPlaySyncService
             return;
         }
 
-        DB::transaction(function () use ($account, $data): void {
-            $stockIn = StockIn::create([
-                'company_id' => $account->company_id,
-                'salesplay_account_id' => $account->id,
-                'salesplay_grn_id' => $data->salesplayGrnId,
-                'supplier_name' => $data->supplierName,
-                'invoice_no' => $data->invoiceNo,
-                'received_at' => $data->receivedAt,
-                'total' => $data->total,
-                'raw_json' => $data->raw,
-            ]);
-
-            foreach ($data->items as $item) {
-                $product = $this->resolveProduct($account->company_id, $item->salesplayProductId, $item->productName);
-
-                StockInItem::create([
-                    'stock_in_id' => $stockIn->id,
-                    'product_id' => $product?->id,
-                    'product_name' => $item->productName,
-                    'quantity' => $item->quantity,
-                    'unit_cost' => $item->unitCost,
-                    'total' => $item->total,
+        try {
+            DB::transaction(function () use ($account, $data): void {
+                $stockIn = StockIn::create([
+                    'company_id' => $account->company_id,
+                    'salesplay_account_id' => $account->id,
+                    'salesplay_grn_id' => $data->salesplayGrnId,
+                    'supplier_name' => $data->supplierName,
+                    'invoice_no' => $data->invoiceNo,
+                    'received_at' => $data->receivedAt,
+                    'total' => $data->total,
+                    'raw_json' => $data->raw,
                 ]);
-            }
-        });
+
+                foreach ($data->items as $item) {
+                    $product = $this->resolveProduct($account->company_id, $item->salesplayProductId, $item->productName);
+
+                    StockInItem::create([
+                        'stock_in_id' => $stockIn->id,
+                        'product_id' => $product?->id,
+                        'product_name' => $item->productName,
+                        'quantity' => $item->quantity,
+                        'unit_cost' => $item->unitCost,
+                        'total' => $item->total,
+                    ]);
+                }
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Already inserted by another run that raced with this one (the
+            // per-account lock should prevent this, but the exists() check
+            // above isn't atomic with the insert, so this stays as a
+            // last-resort guard) — treat it the same as the exists() check
+            // finding it: already synced, nothing more to do.
+        }
     }
 
     /**
@@ -250,67 +259,88 @@ class SalesPlaySyncService
             return false;
         }
 
-        DB::transaction(function () use ($account, $data): void {
-            $customer = $data->customer ? $this->resolveCustomer($account->company_id, $data->customer) : null;
+        try {
+            DB::transaction(function () use ($account, $data): void {
+                $customer = $data->customer ? $this->resolveCustomer($account->company_id, $data->customer) : null;
 
-            $receipt = Receipt::create([
-                'company_id' => $account->company_id,
-                'salesplay_account_id' => $account->id,
-                'customer_id' => $customer?->id,
-                'salesplay_receipt_id' => $data->salesplayReceiptId,
-                'receipt_number' => $data->receiptNumber,
-                'transaction_date' => $data->transactionDate,
-                'subtotal' => $data->subtotal,
-                'discount' => $data->discount,
-                'tax' => $data->tax,
-                'total' => $data->total,
-                'payment_status' => $data->paymentStatus,
-                'raw_json' => $data->raw,
-            ]);
-
-            foreach ($data->items as $item) {
-                $product = $this->resolveProduct($account->company_id, $item->salesplayProductId, $item->productName);
-
-                ReceiptItem::create([
-                    'receipt_id' => $receipt->id,
-                    'product_id' => $product?->id,
-                    'product_name' => $item->productName,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unitPrice,
-                    'discount' => $item->discount,
-                    'total' => $item->total,
+                $receipt = Receipt::create([
+                    'company_id' => $account->company_id,
+                    'salesplay_account_id' => $account->id,
+                    'customer_id' => $customer?->id,
+                    'salesplay_receipt_id' => $data->salesplayReceiptId,
+                    'receipt_number' => $data->receiptNumber,
+                    'transaction_date' => $data->transactionDate,
+                    'subtotal' => $data->subtotal,
+                    'discount' => $data->discount,
+                    'tax' => $data->tax,
+                    'total' => $data->total,
+                    'payment_status' => $data->paymentStatus,
+                    'raw_json' => $data->raw,
                 ]);
-            }
 
-            foreach ($data->payments as $payment) {
-                Payment::create([
-                    'receipt_id' => $receipt->id,
-                    'payment_method' => $payment->paymentMethod,
-                    'amount' => $payment->amount,
-                ]);
-            }
-        });
+                foreach ($data->items as $item) {
+                    $product = $this->resolveProduct($account->company_id, $item->salesplayProductId, $item->productName);
+
+                    ReceiptItem::create([
+                        'receipt_id' => $receipt->id,
+                        'product_id' => $product?->id,
+                        'product_name' => $item->productName,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->unitPrice,
+                        'discount' => $item->discount,
+                        'total' => $item->total,
+                    ]);
+                }
+
+                foreach ($data->payments as $payment) {
+                    Payment::create([
+                        'receipt_id' => $receipt->id,
+                        'payment_method' => $payment->paymentMethod,
+                        'amount' => $payment->amount,
+                    ]);
+                }
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Already inserted by another run that raced with this one (the
+            // per-account lock should prevent this, but the exists() check
+            // above isn't atomic with the insert, so this stays as a
+            // last-resort guard) — treat it the same as the exists() check
+            // finding it: already synced, nothing more to do.
+            return false;
+        }
 
         return true;
     }
 
     private function resolveCustomer(int $companyId, SalesPlayCustomerData $data): Customer
     {
-        return Customer::withoutGlobalScopes()->updateOrCreate(
-            [
-                'company_id' => $companyId,
-                'salesplay_customer_id' => $data->salesplayCustomerId,
-            ],
-            [
-                'name' => $data->name,
-                'email' => $data->email,
-                'phone' => $data->phone,
-                'address' => $data->address,
-                'city' => $data->city,
-                'region' => $data->region,
-                'postal_code' => $data->postalCode,
-            ]
-        );
+        // A company can run several SalesPlay accounts (multi-branch) whose
+        // syncs aren't locked against each other, so two receipts for the
+        // same customer can still race here even though single-account
+        // races are now prevented — fall back to a plain lookup rather than
+        // letting the race abort the receipt this customer belongs to.
+        try {
+            return Customer::withoutGlobalScopes()->updateOrCreate(
+                [
+                    'company_id' => $companyId,
+                    'salesplay_customer_id' => $data->salesplayCustomerId,
+                ],
+                [
+                    'name' => $data->name,
+                    'email' => $data->email,
+                    'phone' => $data->phone,
+                    'address' => $data->address,
+                    'city' => $data->city,
+                    'region' => $data->region,
+                    'postal_code' => $data->postalCode,
+                ]
+            );
+        } catch (UniqueConstraintViolationException) {
+            return Customer::withoutGlobalScopes()
+                ->where('company_id', $companyId)
+                ->where('salesplay_customer_id', $data->salesplayCustomerId)
+                ->firstOrFail();
+        }
     }
 
     private function resolveProduct(int $companyId, ?string $salesplayProductId, string $productName): ?Product
@@ -319,14 +349,21 @@ class SalesPlaySyncService
             return null;
         }
 
-        return Product::withoutGlobalScopes()->firstOrCreate(
-            [
-                'company_id' => $companyId,
-                'salesplay_product_id' => $salesplayProductId,
-            ],
-            [
-                'name' => $productName,
-            ]
-        );
+        try {
+            return Product::withoutGlobalScopes()->firstOrCreate(
+                [
+                    'company_id' => $companyId,
+                    'salesplay_product_id' => $salesplayProductId,
+                ],
+                [
+                    'name' => $productName,
+                ]
+            );
+        } catch (UniqueConstraintViolationException) {
+            return Product::withoutGlobalScopes()
+                ->where('company_id', $companyId)
+                ->where('salesplay_product_id', $salesplayProductId)
+                ->first();
+        }
     }
 }
