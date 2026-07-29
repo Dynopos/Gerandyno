@@ -2,6 +2,18 @@
     <div class="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <x-page-header :title="__('app.reports.inventory.title')" :subtitle="__('app.reports.inventory.subtitle')">
             <x-slot name="actions">
+                <button
+                    type="button"
+                    x-data=""
+                    x-on:click="$dispatch('open-modal', 'confirm-stock-reset')"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-600 shadow-sm transition hover:bg-rose-50"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                        <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m3 0-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                    </svg>
+                    {{ __('app.reports.inventory.reset') }}
+                </button>
+
                 <a href="{{ route('reports.inventory.adjustment.create') }}" class="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition hover:bg-gold-700">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                         <path d="M4 4v5h5M20 20v-5h-5" />
@@ -11,6 +23,30 @@
                 </a>
             </x-slot>
         </x-page-header>
+
+        <x-modal name="confirm-stock-reset" focusable>
+            <form method="POST" action="{{ route('reports.inventory.reset') }}" class="p-6">
+                @csrf
+
+                <h2 class="text-lg font-medium text-gray-900">
+                    {{ __('app.reports.inventory.reset_confirm_title') }}
+                </h2>
+
+                <p class="mt-1 text-sm text-gray-600">
+                    {{ __('app.reports.inventory.reset_confirm_description') }}
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close')">
+                        {{ __('app.expenses.cancel') }}
+                    </x-secondary-button>
+
+                    <x-danger-button class="ms-3">
+                        {{ __('app.reports.inventory.reset_confirm_button') }}
+                    </x-danger-button>
+                </div>
+            </form>
+        </x-modal>
 
         <x-period-filter :period="$period" route-name="reports.inventory.index" />
 

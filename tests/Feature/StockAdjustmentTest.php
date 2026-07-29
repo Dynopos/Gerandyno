@@ -89,4 +89,40 @@ class StockAdjustmentTest extends TestCase
 
         $this->actingAs($admin)->get('/reports/inventory/adjustment')->assertForbidden();
     }
+
+    public function test_customer_can_reset_stock_for_all_own_products_to_zero(): void
+    {
+        [$user, $company] = $this->makeCustomerUser();
+
+        $productA = Product::factory()->create(['company_id' => $company->id]);
+        $productB = Product::factory()->create(['company_id' => $company->id]);
+
+        $response = $this->actingAs($user)->post('/reports/inventory/reset');
+
+        $response->assertRedirect('/reports/inventory');
+        $this->assertDatabaseHas('stock_adjustments', [
+            'company_id' => $company->id,
+            'product_id' => $productA->id,
+            'quantity' => 0,
+            'created_by' => $user->id,
+        ]);
+        $this->assertDatabaseHas('stock_adjustments', [
+            'company_id' => $company->id,
+            'product_id' => $productB->id,
+            'quantity' => 0,
+            'created_by' => $user->id,
+        ]);
+    }
+
+    public function test_reset_stock_does_not_touch_another_companys_products(): void
+    {
+        [$user, $company] = $this->makeCustomerUser();
+        [, $companyB] = $this->makeCustomerUser();
+
+        $productB = Product::factory()->create(['company_id' => $companyB->id]);
+
+        $this->actingAs($user)->post('/reports/inventory/reset');
+
+        $this->assertDatabaseMissing('stock_adjustments', ['product_id' => $productB->id]);
+    }
 }
