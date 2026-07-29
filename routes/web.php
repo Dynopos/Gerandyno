@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/companies/{company}/users/create', [CompanyUserController::class, 'create'])->name('companies.users.create');
         Route::post('/companies/{company}/users', [CompanyUserController::class, 'store'])->name('companies.users.store');
         Route::resource('salesplay-accounts', SalesplayAccountController::class)->except('show');
+        Route::post('/salesplay-accounts/{salesplayAccount}/sync', [SalesplayAccountController::class, 'sync'])->name('salesplay-accounts.sync');
         Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
         Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
         Route::get('/import', [CustomerImportController::class, 'create'])->name('import.create');

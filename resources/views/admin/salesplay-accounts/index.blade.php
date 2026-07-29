@@ -49,6 +49,12 @@
                                     </td>
                                     <td class="whitespace-nowrap px-5 py-3 text-right text-sm">
                                         <div class="flex items-center justify-end gap-3">
+                                            <form method="POST" action="{{ route('admin.salesplay-accounts.sync', $account) }}">
+                                                @csrf
+                                                <button type="submit" class="font-medium text-gold-600 hover:text-gold-700">
+                                                    {{ __('app.admin.salesplay_accounts.sync_now') }}
+                                                </button>
+                                            </form>
                                             <a href="{{ route('admin.salesplay-accounts.edit', $account) }}" class="font-medium text-gold-600 hover:text-gold-700">
                                                 {{ __('app.admin.salesplay_accounts.edit') }}
                                             </a>

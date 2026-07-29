@@ -80,6 +80,30 @@ class AdminSalesplayAccountsTest extends TestCase
         $this->assertDatabaseMissing('salesplay_accounts', ['id' => $account->id]);
     }
 
+    public function test_admin_can_trigger_a_manual_sync(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Manual', 'last_synced_at' => null]);
+
+        $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.sync', $account));
+
+        $response->assertRedirect(route('admin.salesplay-accounts.index'));
+        $response->assertSessionHas('status');
+
+        $account->refresh();
+        $this->assertNotNull($account->last_synced_at);
+        $this->assertSame('success', $account->last_sync_status);
+    }
+
+    public function test_customer_cannot_trigger_a_manual_sync(): void
+    {
+        $company = Company::factory()->create();
+        $customer = User::factory()->create(['company_id' => $company->id, 'role' => 'customer']);
+        $account = SalesplayAccount::factory()->create(['company_id' => $company->id]);
+
+        $this->actingAs($customer)->post(route('admin.salesplay-accounts.sync', $account))->assertForbidden();
+    }
+
     public function test_customer_cannot_access_the_admin_salesplay_accounts_panel(): void
     {
         $customer = User::factory()->create(['role' => 'customer']);

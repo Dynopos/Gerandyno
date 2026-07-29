@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncSalesPlayAccountJob;
 use App\Models\Company;
 use App\Models\SalesplayAccount;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Throwable;
 
 class SalesplayAccountController extends Controller
 {
@@ -81,6 +83,33 @@ class SalesplayAccountController extends Controller
 
         return redirect()->route('admin.salesplay-accounts.index')
             ->with('status', __('app.admin.salesplay_accounts.updated', ['name' => $salesplayAccount->shop_name]));
+    }
+
+    /**
+     * Runs the sync inline (not queued) so the admin gets an immediate
+     * pass/fail result in the flash message, without depending on a queue
+     * worker being up — the same reasoning behind the scheduled sync
+     * using --now instead of dispatching to the queue.
+     */
+    public function sync(SalesplayAccount $salesplayAccount): RedirectResponse
+    {
+        $this->authorize('update', $salesplayAccount);
+
+        try {
+            SyncSalesPlayAccountJob::dispatchSync($salesplayAccount);
+        } catch (Throwable) {
+            // Already logged and persisted onto the account by the job itself.
+        }
+
+        $salesplayAccount->refresh();
+
+        return redirect()->route('admin.salesplay-accounts.index')
+            ->with('status', $salesplayAccount->last_sync_status === 'success'
+                ? __('app.admin.salesplay_accounts.sync_success', ['name' => $salesplayAccount->shop_name])
+                : __('app.admin.salesplay_accounts.sync_failed', [
+                    'name' => $salesplayAccount->shop_name,
+                    'error' => $salesplayAccount->last_sync_error,
+                ]));
     }
 
     public function destroy(SalesplayAccount $salesplayAccount): RedirectResponse
