@@ -62,7 +62,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
     ) {}
 
     public function fetchReceipts(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,
@@ -96,7 +96,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
     }
 
     public function fetchStockLevels(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?string $cursor,
     ): SalesPlayStockLevelPage {
@@ -147,7 +147,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
      * already synced.
      */
     public function fetchStockIns(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,

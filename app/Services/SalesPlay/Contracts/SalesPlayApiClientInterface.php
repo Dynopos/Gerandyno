@@ -25,7 +25,7 @@ interface SalesPlayApiClientInterface
      * @throws SalesPlayApiException
      */
     public function fetchReceipts(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,
@@ -39,7 +39,7 @@ interface SalesPlayApiClientInterface
      * @throws SalesPlayApiException
      */
     public function fetchStockLevels(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?string $cursor,
     ): SalesPlayStockLevelPage;
@@ -53,7 +53,7 @@ interface SalesPlayApiClientInterface
      * @throws SalesPlayApiException
      */
     public function fetchStockIns(
-        string $shopId,
+        ?string $shopId,
         string $apiToken,
         ?CarbonInterface $since,
         ?string $cursor,
