@@ -29,9 +29,9 @@ class CustomerImportTest extends TestCase
 
         $admin = User::factory()->admin()->create();
 
-        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
-            ."Kedai Ali,Kedai Ali Cawangan 1,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
-            ."Kedai Siti,Kedai Siti Cawangan 1,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
+        $csv = "company_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            ."Kedai Ali,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
+            ."Kedai Siti,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
 
         $response = $this->actingAs($admin)->post('/admin/import', [
             'file' => $this->csvFile($csv),
@@ -60,9 +60,9 @@ class CustomerImportTest extends TestCase
         $existingCompany = Company::factory()->create();
         User::factory()->create(['company_id' => $existingCompany->id, 'email' => 'ali@kedaiali.test']);
 
-        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
-            ."Kedai Ali,Kedai Ali Cawangan 1,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
-            ."Kedai Siti,Kedai Siti Cawangan 1,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
+        $csv = "company_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            ."Kedai Ali,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
+            ."Kedai Siti,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
 
         $response = $this->actingAs($admin)->post('/admin/import', [
             'file' => $this->csvFile($csv),
@@ -81,9 +81,9 @@ class CustomerImportTest extends TestCase
 
         $admin = User::factory()->admin()->create();
 
-        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
-            .",Kedai Tanpa Nama,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
-            ."Kedai Siti,Kedai Siti Cawangan 1,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
+        $csv = "company_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            .",shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n"
+            ."Kedai Siti,shop-002,token-def,Siti binti Aminah,siti@kedaisiti.test\n";
 
         $response = $this->actingAs($admin)->post('/admin/import', [
             'file' => $this->csvFile($csv),
@@ -102,8 +102,8 @@ class CustomerImportTest extends TestCase
         $admin = User::factory()->admin()->create();
         SalesplayAccount::factory()->create(['salesplay_shop_id' => 'shop-001']);
 
-        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
-            ."Kedai Ali,Kedai Ali Cawangan 1,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n";
+        $csv = "company_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            ."Kedai Ali,shop-001,token-abc,Ali bin Abu,ali@kedaiali.test\n";
 
         $response = $this->actingAs($admin)->post('/admin/import', [
             'file' => $this->csvFile($csv),
@@ -120,15 +120,15 @@ class CustomerImportTest extends TestCase
 
         $admin = User::factory()->admin()->create();
 
-        $csv = "company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
-            ."Kedai Ali,Kedai Ali Cawangan 1,,token-abc,Ali bin Abu,ali@kedaiali.test\n";
+        $csv = "company_name,salesplay_shop_id,api_token,customer_name,customer_email\n"
+            ."Kedai Ali,,token-abc,Ali bin Abu,ali@kedaiali.test\n";
 
         $response = $this->actingAs($admin)->post('/admin/import', [
             'file' => $this->csvFile($csv),
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('salesplay_accounts', ['shop_name' => 'Kedai Ali Cawangan 1', 'salesplay_shop_id' => null]);
+        $this->assertDatabaseHas('salesplay_accounts', ['shop_name' => 'Kedai Ali', 'salesplay_shop_id' => null]);
         $this->assertDatabaseHas('users', ['email' => 'ali@kedaiali.test']);
         Queue::assertPushed(SendCustomerInviteEmail::class, 1);
     }

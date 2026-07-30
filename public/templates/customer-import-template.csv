@@ -1,2 +1,2 @@
-company_name,shop_name,salesplay_shop_id,api_token,customer_name,customer_email
-Contoh Kedai Sdn Bhd,Contoh Kedai Cawangan Utama,R1ZNTmQrSWZ1a0ZDWjlRZURTSHE2UT09,eyJhbGciOi...,Ahmad bin Ali,ahmad@contohkedai.test
+company_name,salesplay_shop_id,api_token,customer_name,customer_email
+Contoh Kedai Sdn Bhd,R1ZNTmQrSWZ1a0ZDWjlRZURTSHE2UT09,eyJhbGciOi...,Ahmad bin Ali,ahmad@contohkedai.test
