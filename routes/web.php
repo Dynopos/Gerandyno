@@ -16,6 +16,7 @@ use App\Http\Controllers\Reports\PaymentTypeReportController;
 use App\Http\Controllers\Reports\PnlReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
+use App\Http\Controllers\Reports\ShiftReportController;
 use App\Http\Controllers\Reports\StockAdjustmentController;
 use App\Http\Controllers\Reports\YearlyReportController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/payment-types', [PaymentTypeReportController::class, 'index'])->name('payment-types.index');
         Route::get('/payment-types/export/{format}', [PaymentTypeReportController::class, 'export'])->name('payment-types.export');
         Route::post('/payment-types/email', [PaymentTypeReportController::class, 'email'])->middleware('throttle:6,1')->name('payment-types.email');
+        Route::get('/shifts', [ShiftReportController::class, 'index'])->name('shifts.index');
         Route::get('/customers', [CustomerReportController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [CustomerReportController::class, 'show'])->name('customers.show');
         Route::get('/inventory', [InventoryReportController::class, 'index'])->name('inventory.index');
