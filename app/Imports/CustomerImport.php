@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 /**
  * Reads a bulk customer-onboarding CSV into raw rows. Expected columns
  * (header names are case-insensitive and spaces become underscores, per
- * WithHeadingRow): company_name, shop_name, salesplay_shop_id, api_token,
+ * WithHeadingRow): company_name, salesplay_shop_id, api_token,
  * customer_name, customer_email.
  *
  * Deliberately does no validation or database writes itself — that's

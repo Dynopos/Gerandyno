@@ -8,7 +8,6 @@
 
             <ul class="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm text-slate-600 sm:grid-cols-2">
                 <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">company_name</code> — {{ __('app.admin.import.col_company_name') }}</li>
-                <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">shop_name</code> — {{ __('app.admin.import.col_shop_name') }}</li>
                 <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">salesplay_shop_id</code> — {{ __('app.admin.import.col_shop_id') }}</li>
                 <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">api_token</code> — {{ __('app.admin.import.col_api_token') }}</li>
                 <li><code class="rounded bg-slate-100 px-1.5 py-0.5 text-xs">customer_name</code> — {{ __('app.admin.import.col_customer_name') }}</li>

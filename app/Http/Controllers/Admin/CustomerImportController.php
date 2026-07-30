@@ -30,7 +30,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class CustomerImportController extends Controller
 {
     private const REQUIRED_COLUMNS = [
-        'company_name', 'shop_name', 'salesplay_shop_id', 'api_token', 'customer_name', 'customer_email',
+        'company_name', 'salesplay_shop_id', 'api_token', 'customer_name', 'customer_email',
     ];
 
     public function create(): View
@@ -76,7 +76,6 @@ class CustomerImportController extends Controller
 
             $validator = Validator::make($data, [
                 'company_name' => ['required', 'string', 'max:255'],
-                'shop_name' => ['required', 'string', 'max:255'],
                 'salesplay_shop_id' => ['nullable', 'string', 'max:255'],
                 'api_token' => ['required', 'string'],
                 'customer_name' => ['required', 'string', 'max:255'],
@@ -106,7 +105,7 @@ class CustomerImportController extends Controller
 
                 SalesplayAccount::create([
                     'company_id' => $company->id,
-                    'shop_name' => $data['shop_name'],
+                    'shop_name' => $data['company_name'],
                     'salesplay_shop_id' => $data['salesplay_shop_id'] !== '' ? $data['salesplay_shop_id'] : null,
                     'api_token' => $data['api_token'],
                     'status' => 'active',
