@@ -47,6 +47,8 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $lastSyncedAt = $user->company?->salesplayAccounts->max('last_synced_at');
+
         return view('dashboard', [
             'todaySales' => $todaySales,
             'todayTransactions' => $todayTransactions,
@@ -57,6 +59,7 @@ class DashboardController extends Controller
             'monthlySales' => $monthlySales,
             'topCategories' => $topCategories,
             'recentReceipts' => $recentReceipts,
+            'lastSyncedAt' => $lastSyncedAt,
         ]);
     }
 

@@ -19,6 +19,7 @@ use App\Http\Controllers\Reports\SalesReportController;
 use App\Http\Controllers\Reports\ShiftReportController;
 use App\Http\Controllers\Reports\StockAdjustmentController;
 use App\Http\Controllers\Reports\YearlyReportController;
+use App\Http\Controllers\SyncController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('company')->group(function () {
         Route::resource('expenses', ExpenseController::class)->except('show');
+        Route::post('/sync', [SyncController::class, 'store'])->middleware('throttle:6,1')->name('sync.store');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
