@@ -11,6 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // An earlier, unrelated attempt at a "shifts" feature (PR #19,
+        // reverted in PR #20) left this table behind on production — its
+        // migration file was deleted as part of the revert, so Laravel has
+        // no record of it and this migration collides with the orphaned
+        // table. Drop it first; its schema doesn't match what we create
+        // below anyway, so there's no data worth preserving from it.
+        Schema::dropIfExists('shifts');
+
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
