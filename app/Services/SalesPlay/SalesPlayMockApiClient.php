@@ -8,6 +8,8 @@ use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayShiftData;
+use App\Services\SalesPlay\DTO\SalesPlayShiftPage;
 use App\Services\SalesPlay\DTO\SalesPlayStockInData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInItemData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
@@ -88,6 +90,47 @@ class SalesPlayMockApiClient implements SalesPlayApiClientInterface
         }
 
         return new SalesPlayStockInPage(items: $items, hasMore: false, nextCursor: null);
+    }
+
+    public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+    {
+        $items = collect(range(1, 2))
+            ->map(fn () => $this->fakeShift())
+            ->all();
+
+        return new SalesPlayShiftPage(items: $items, hasMore: false, nextCursor: null);
+    }
+
+    private function fakeShift(): SalesPlayShiftData
+    {
+        $openedAt = Carbon::instance(fake()->dateTimeBetween('-30 days', '-1 hours'));
+        $closedAt = $openedAt->clone()->addHours(random_int(4, 10));
+        $cashPayments = fake()->randomFloat(2, 20, 300);
+        $expectedCash = round(100 + $cashPayments, 2);
+        $actualCash = fake()->boolean(70) ? $expectedCash : round($expectedCash - fake()->randomFloat(2, 1, 20), 2);
+
+        return new SalesPlayShiftData(
+            salesplayShiftId: 'mock-shift-'.Str::uuid(),
+            posDeviceId: 'SP'.fake()->numberBetween(10000000, 99999999),
+            openedAt: $openedAt,
+            closedAt: $closedAt,
+            openedByEmployee: 'admin',
+            closedByEmployee: 'admin',
+            startingCash: 100,
+            cashPayments: $cashPayments,
+            cashRefunds: 0,
+            paidIn: 0,
+            paidOut: 0,
+            expectedCash: $expectedCash,
+            actualCash: $actualCash,
+            grossSales: $cashPayments,
+            refunds: 0,
+            discounts: 0,
+            netSales: $cashPayments,
+            tip: 0,
+            surcharge: 0,
+            raw: ['source' => 'mock'],
+        );
     }
 
     private function fakeStockIn(?string $shopId, ?CarbonInterface $since): SalesPlayStockInData

@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
+use App\Models\Shift;
 use App\Models\StockIn;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
 use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
@@ -16,6 +17,8 @@ use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayShiftData;
+use App\Services\SalesPlay\DTO\SalesPlayShiftPage;
 use App\Services\SalesPlay\DTO\SalesPlayStockInData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInItemData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
@@ -23,14 +26,15 @@ use App\Services\SalesPlay\DTO\SalesPlayStockLevelData;
 use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
 use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use App\Services\SalesPlay\SalesPlaySyncService;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 /**
- * Fills in the stock-related interface methods with empty pages so the
- * anonymous fake clients below only need to define fetchReceipts()
+ * Fills in the stock- and shift-related interface methods with empty pages
+ * so the anonymous fake clients below only need to define fetchReceipts()
  * behaviour relevant to what each test is actually checking.
  */
 trait FakesEmptySalesPlayStockData
@@ -44,6 +48,11 @@ trait FakesEmptySalesPlayStockData
     {
         return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
     }
+
+    public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+    {
+        return new SalesPlayShiftPage(items: [], hasMore: false, nextCursor: null);
+    }
 }
 
 /**
@@ -55,6 +64,11 @@ trait FakesEmptySalesPlayReceipts
     public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
     {
         return new SalesPlayReceiptPage(items: [], hasMore: false, nextCursor: null);
+    }
+
+    public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+    {
+        return new SalesPlayShiftPage(items: [], hasMore: false, nextCursor: null);
     }
 }
 
@@ -539,5 +553,173 @@ class SalesPlaySyncTest extends TestCase
         $this->assertSame('Acme Supplies', $stored->supplier_name);
         $this->assertSame(1, $stored->items()->count());
         $this->assertSame('Sugar 1kg', $stored->items()->first()->product_name);
+    }
+
+    public function test_sync_stores_shifts(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null]);
+
+        $shiftData = new SalesPlayShiftData(
+            salesplayShiftId: 'shift-1',
+            posDeviceId: 'SP12345',
+            openedAt: Carbon::parse('2026-07-21 21:12:02'),
+            closedAt: Carbon::parse('2026-07-28 20:01:23'),
+            openedByEmployee: 'admin',
+            closedByEmployee: 'admin',
+            startingCash: 0,
+            cashPayments: 445.25,
+            cashRefunds: 0,
+            paidIn: 0,
+            paidOut: 0,
+            expectedCash: 445.25,
+            actualCash: 0,
+            grossSales: 693.75,
+            refunds: 0,
+            discounts: 0,
+            netSales: 693.75,
+            tip: 0,
+            surcharge: 0,
+            raw: ['id' => 'shift-1'],
+        );
+
+        $fake = new class($shiftData) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayReceipts;
+
+            public function __construct(private SalesPlayShiftData $shift) {}
+
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+            {
+                return new SalesPlayShiftPage(items: [$this->shift], hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fake))->sync($account);
+
+        $stored = Shift::withoutGlobalScopes()->where('salesplay_shift_id', 'shift-1')->first();
+        $this->assertNotNull($stored);
+        $this->assertSame($account->company_id, $stored->company_id);
+        $this->assertSame('SP12345', $stored->pos_device_id);
+        $this->assertSame('445.25', $stored->expected_cash);
+        $this->assertSame('0.00', $stored->actual_cash);
+        $this->assertSame(-445.25, $stored->cashDifference());
+    }
+
+    public function test_sync_updates_an_existing_shift_when_it_gets_closed(): void
+    {
+        $account = SalesplayAccount::factory()->create(['last_synced_at' => null]);
+
+        $openShift = new SalesPlayShiftData(
+            salesplayShiftId: 'shift-open',
+            posDeviceId: 'SP99999',
+            openedAt: null,
+            closedAt: null,
+            openedByEmployee: null,
+            closedByEmployee: null,
+            startingCash: 100,
+            cashPayments: 69.75,
+            cashRefunds: 0,
+            paidIn: 0,
+            paidOut: 0,
+            expectedCash: 169.75,
+            actualCash: 0,
+            grossSales: 69.75,
+            refunds: 0,
+            discounts: 0,
+            netSales: 69.75,
+            tip: 0,
+            surcharge: 0,
+            raw: ['id' => 'shift-open'],
+        );
+
+        $fakeFirstSync = new class($openShift) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayReceipts;
+
+            public function __construct(private SalesPlayShiftData $shift) {}
+
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+            {
+                return new SalesPlayShiftPage(items: [$this->shift], hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fakeFirstSync))->sync($account);
+
+        $this->assertSame(1, Shift::withoutGlobalScopes()->where('salesplay_shift_id', 'shift-open')->count());
+
+        $closedShift = new SalesPlayShiftData(
+            salesplayShiftId: 'shift-open',
+            posDeviceId: 'SP99999',
+            openedAt: Carbon::parse('2026-07-29 12:31:00'),
+            closedAt: Carbon::parse('2026-07-29 12:34:00'),
+            openedByEmployee: 'admin',
+            closedByEmployee: 'admin',
+            startingCash: 100,
+            cashPayments: 69.75,
+            cashRefunds: 0,
+            paidIn: 0,
+            paidOut: 0,
+            expectedCash: 169.75,
+            actualCash: 170,
+            grossSales: 69.75,
+            refunds: 0,
+            discounts: 0,
+            netSales: 69.75,
+            tip: 0,
+            surcharge: 0,
+            raw: ['id' => 'shift-open'],
+        );
+
+        $fakeSecondSync = new class($closedShift) implements SalesPlayApiClientInterface
+        {
+            use FakesEmptySalesPlayReceipts;
+
+            public function __construct(private SalesPlayShiftData $shift) {}
+
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+            {
+                return new SalesPlayShiftPage(items: [$this->shift], hasMore: false, nextCursor: null);
+            }
+        };
+
+        (new SalesPlaySyncService($fakeSecondSync))->sync($account);
+
+        $this->assertSame(1, Shift::withoutGlobalScopes()->where('salesplay_shift_id', 'shift-open')->count());
+
+        $stored = Shift::withoutGlobalScopes()->where('salesplay_shift_id', 'shift-open')->first();
+        $this->assertNotNull($stored->closed_at);
+        $this->assertSame('170.00', $stored->actual_cash);
+        $this->assertSame(0.25, $stored->cashDifference());
     }
 }

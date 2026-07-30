@@ -8,11 +8,13 @@ use App\Models\Product;
 use App\Models\Receipt;
 use App\Models\ReceiptItem;
 use App\Models\SalesplayAccount;
+use App\Models\Shift;
 use App\Models\StockIn;
 use App\Models\StockInItem;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
 use App\Services\SalesPlay\DTO\SalesPlayCustomerData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
+use App\Services\SalesPlay\DTO\SalesPlayShiftData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInData;
 use App\Services\SalesPlay\DTO\SalesPlayStockLevelData;
 use App\Services\SalesPlay\DTO\SalesPlaySyncResult;
@@ -89,6 +91,7 @@ class SalesPlaySyncService
 
         $this->syncStockLevels($account);
         $this->syncStockIns($account, $since);
+        $this->syncShifts($account);
 
         return new SalesPlaySyncResult(synced: $synced, skipped: $skipped);
     }
@@ -243,6 +246,88 @@ class SalesPlaySyncService
             // above isn't atomic with the insert, so this stays as a
             // last-resort guard) — treat it the same as the exists() check
             // finding it: already synced, nothing more to do.
+        }
+    }
+
+    /**
+     * Syncs shifts (terminal open/close with cash reconciliation). Always a
+     * full paginated fetch — see fetchShifts() on the interface for why this
+     * can't be incremental like receipts/stock-ins.
+     *
+     * @throws SalesPlayApiException
+     */
+    private function syncShifts(SalesplayAccount $account): void
+    {
+        $cursor = null;
+        $page = 0;
+
+        do {
+            if (++$page > self::MAX_PAGES) {
+                throw new SalesPlayApiException(
+                    "SalesPlay shift sync for account [{$account->id}] exceeded ".self::MAX_PAGES.' pages; aborting.'
+                );
+            }
+
+            $result = $this->client->fetchShifts(
+                apiToken: $account->api_token,
+                cursor: $cursor,
+            );
+
+            foreach ($result->items as $shiftData) {
+                $this->storeShift($account, $shiftData);
+            }
+
+            $cursor = $result->nextCursor;
+        } while ($result->hasMore);
+    }
+
+    /**
+     * Unlike receipts/stock-ins (immutable once synced), a shift can change
+     * after it was first seen — it starts "open" and gets updated in place
+     * once the cashier closes it out — so this upserts on every sync instead
+     * of skipping records that already exist.
+     */
+    private function storeShift(SalesplayAccount $account, SalesPlayShiftData $data): void
+    {
+        $attributes = [
+            'company_id' => $account->company_id,
+            'pos_device_id' => $data->posDeviceId,
+            'opened_at' => $data->openedAt,
+            'closed_at' => $data->closedAt,
+            'opened_by_employee' => $data->openedByEmployee,
+            'closed_by_employee' => $data->closedByEmployee,
+            'starting_cash' => $data->startingCash,
+            'cash_payments' => $data->cashPayments,
+            'cash_refunds' => $data->cashRefunds,
+            'paid_in' => $data->paidIn,
+            'paid_out' => $data->paidOut,
+            'expected_cash' => $data->expectedCash,
+            'actual_cash' => $data->actualCash,
+            'gross_sales' => $data->grossSales,
+            'refunds' => $data->refunds,
+            'discounts' => $data->discounts,
+            'net_sales' => $data->netSales,
+            'tip' => $data->tip,
+            'surcharge' => $data->surcharge,
+            'raw_json' => $data->raw,
+        ];
+
+        try {
+            Shift::withoutGlobalScopes()->updateOrCreate(
+                [
+                    'salesplay_account_id' => $account->id,
+                    'salesplay_shift_id' => $data->salesplayShiftId,
+                ],
+                $attributes
+            );
+        } catch (UniqueConstraintViolationException) {
+            // Already inserted by another run that raced with this one (the
+            // per-account lock should prevent this, but this stays as a
+            // last-resort guard) — fall back to a plain update.
+            Shift::withoutGlobalScopes()
+                ->where('salesplay_account_id', $account->id)
+                ->where('salesplay_shift_id', $data->salesplayShiftId)
+                ->update($attributes);
         }
     }
 

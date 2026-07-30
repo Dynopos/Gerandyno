@@ -8,6 +8,8 @@ use App\Services\SalesPlay\DTO\SalesPlayPaymentData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptItemData;
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayShiftData;
+use App\Services\SalesPlay\DTO\SalesPlayShiftPage;
 use App\Services\SalesPlay\DTO\SalesPlayStockInData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInItemData;
 use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
@@ -185,6 +187,52 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
     }
 
     /**
+     * Unlike every other endpoint on this API (which use a custom
+     * `Token: Bearer <token>` header), /shifts rejects that with
+     * `UNAUTHORIZED: Access token is not valid` and instead requires the
+     * conventional `Authorization: Bearer <token>` header — confirmed by
+     * testing directly against the real API, since the endpoint isn't
+     * mentioned in SalesPlay's REST API integration guide at all (only
+     * discoverable via their separate API reference site).
+     */
+    public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+    {
+        try {
+            $response = Http::baseUrl(rtrim($this->baseUrl, '/'))
+                ->withHeaders($this->shiftHeaders($apiToken))
+                ->timeout($this->timeout)
+                ->send('GET', '/shifts', ['json' => array_filter([
+                    'limit' => self::PAGE_SIZE,
+                    'cursor' => $cursor,
+                ])]);
+        } catch (Throwable $e) {
+            throw new SalesPlayApiException(
+                "SalesPlay API request failed for /shifts: {$e->getMessage()}", previous: $e
+            );
+        }
+
+        if ($response->failed()) {
+            throw new SalesPlayApiException(
+                "SalesPlay API returned HTTP {$response->status()} for /shifts: {$response->body()}"
+            );
+        }
+
+        $payload = $response->json();
+
+        // SalesPlay's own API reference documents this list under a "shifts"
+        // key, but the real response nests it under "employees" instead —
+        // check both defensively rather than trust the docs.
+        $shifts = $payload['employees'] ?? $payload['shifts'] ?? [];
+        $nextCursor = $payload['cursor'] ?? null;
+
+        return new SalesPlayShiftPage(
+            items: array_values(array_map(fn (array $shift) => $this->mapShift($shift), $shifts)),
+            hasMore: $shifts !== [] && $nextCursor !== null && $nextCursor !== $cursor,
+            nextCursor: $nextCursor,
+        );
+    }
+
+    /**
      * @return array<string, string>
      */
     private function headers(string $apiToken): array
@@ -196,6 +244,18 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
             // text/html-typed variant registered; asking strictly for
             // application/json (the Laravel default) makes Apache itself
             // reject the request with a 406 before the app ever sees it.
+            'Accept' => '*/*',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function shiftHeaders(string $apiToken): array
+    {
+        return [
+            'Authorization' => "Bearer {$apiToken}",
+            'User-Agent' => 'DynoPOS-CloudReport/1.0',
             'Accept' => '*/*',
         ];
     }
@@ -328,6 +388,39 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
             total: (float) ($grn['grn_total'] ?? $total),
             items: $items,
             raw: $grn,
+        );
+    }
+
+    /**
+     * A shift that hasn't been closed yet has null opened_at/closed_at even
+     * though it already carries cash figures — SalesPlay appears to only
+     * stamp those timestamps once the terminal session is actually closed.
+     *
+     * @param  array<string, mixed>  $shift
+     */
+    private function mapShift(array $shift): SalesPlayShiftData
+    {
+        return new SalesPlayShiftData(
+            salesplayShiftId: (string) $shift['id'],
+            posDeviceId: $shift['pos_device_id'] ?? null,
+            openedAt: isset($shift['opened_at']) ? Carbon::parse($shift['opened_at']) : null,
+            closedAt: isset($shift['closed_at']) ? Carbon::parse($shift['closed_at']) : null,
+            openedByEmployee: $shift['opened_by_employee'] ?? null,
+            closedByEmployee: $shift['closed_by_employee'] ?? null,
+            startingCash: (float) ($shift['starting_cash'] ?? 0),
+            cashPayments: (float) ($shift['cash_payments'] ?? 0),
+            cashRefunds: (float) ($shift['cash_refunds'] ?? 0),
+            paidIn: (float) ($shift['paid_in'] ?? 0),
+            paidOut: (float) ($shift['paid_out'] ?? 0),
+            expectedCash: (float) ($shift['expected_cash'] ?? 0),
+            actualCash: (float) ($shift['actual_cash'] ?? 0),
+            grossSales: (float) ($shift['gross_sales'] ?? 0),
+            refunds: (float) ($shift['refunds'] ?? 0),
+            discounts: (float) ($shift['discounts'] ?? 0),
+            netSales: (float) ($shift['net_sales'] ?? 0),
+            tip: (float) ($shift['tip'] ?? 0),
+            surcharge: (float) ($shift['surcharge'] ?? 0),
+            raw: $shift,
         );
     }
 

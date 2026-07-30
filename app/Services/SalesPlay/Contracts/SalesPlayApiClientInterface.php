@@ -3,6 +3,7 @@
 namespace App\Services\SalesPlay\Contracts;
 
 use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayShiftPage;
 use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
 use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
 use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
@@ -58,4 +59,20 @@ interface SalesPlayApiClientInterface
         ?CarbonInterface $since,
         ?string $cursor,
     ): SalesPlayStockInPage;
+
+    /**
+     * Fetch one page of shifts (terminal open/close with cash reconciliation)
+     * for the merchant account the token belongs to. Unlike receipts, a
+     * shift can change after it was first seen (it starts "open" with nulls
+     * for closed_at/actual_cash and gets updated in place once the cashier
+     * closes it), so this is always a full paginated fetch rather than an
+     * incremental "since" feed — there is no shop_id filter either, since
+     * the endpoint scopes results to the token's account already.
+     *
+     * @throws SalesPlayApiException
+     */
+    public function fetchShifts(
+        string $apiToken,
+        ?string $cursor,
+    ): SalesPlayShiftPage;
 }
