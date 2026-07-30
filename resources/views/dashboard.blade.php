@@ -6,14 +6,33 @@
             <div class="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-white/10"></div>
             <div class="pointer-events-none absolute -bottom-20 right-24 h-40 w-40 rounded-full bg-white/5"></div>
 
-            <div class="relative">
-                <p class="text-sm font-medium text-white/80">{{ now()->translatedFormat('l, d F Y') }}</p>
-                <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
-                    {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
-                </h1>
-                @if (auth()->user()->company)
-                    <p class="mt-2 text-sm text-white/80">{{ auth()->user()->company->name }}</p>
-                @endif
+            <div class="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80">{{ now()->translatedFormat('l, d F Y') }}</p>
+                    <h1 class="mt-1 text-2xl font-semibold sm:text-3xl">
+                        {{ __('app.dashboard.welcome_back') }}, {{ Str::of(auth()->user()->name)->before(' ') }}
+                    </h1>
+                    @if (auth()->user()->company)
+                        <p class="mt-2 text-sm text-white/80">{{ auth()->user()->company->name }}</p>
+                    @endif
+                </div>
+
+                <div class="flex flex-col items-start gap-2 sm:items-end">
+                    <p class="text-xs text-white/70">
+                        {{ $lastSyncedAt ? __('app.sync.last_synced', ['time' => $lastSyncedAt->translatedFormat('d M Y, h:i A')]) : __('app.sync.never_synced') }}
+                    </p>
+                    <form method="POST" action="{{ route('sync.store') }}">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-lg bg-white/15 px-3 py-1.5 text-sm font-medium text-white shadow-sm backdrop-blur transition hover:bg-white/25">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
+                                <path d="M4 4v5h5" />
+                                <path d="M20 20v-5h-5" />
+                                <path d="M5.5 9a7 7 0 0112.6-2.6M18.5 15a7 7 0 01-12.6 2.6" />
+                            </svg>
+                            {{ __('app.sync.button') }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 

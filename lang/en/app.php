@@ -40,6 +40,16 @@ return [
         'no_category_data' => 'No category data for this month.',
     ],
 
+    'sync' => [
+        'button' => 'Sync Now',
+        'syncing' => 'Syncing...',
+        'last_synced' => 'Last synced: :time',
+        'never_synced' => 'Never synced yet',
+        'no_accounts' => 'No SalesPlay account connected yet. Contact us to get set up.',
+        'success' => 'Sync succeeded for :count account(s).',
+        'partial' => ':succeeded account(s) synced successfully, :failed failed. Try again shortly or contact us.',
+    ],
+
     'admin' => [
         'nav' => [
             'section' => 'Admin',

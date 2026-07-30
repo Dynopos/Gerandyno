@@ -40,6 +40,16 @@ return [
         'no_category_data' => 'Tiada data kategori bulan ini.',
     ],
 
+    'sync' => [
+        'button' => 'Sync Sekarang',
+        'syncing' => 'Sedang sync...',
+        'last_synced' => 'Sync terakhir: :time',
+        'never_synced' => 'Belum pernah sync lagi',
+        'no_accounts' => 'Tiada akaun SalesPlay disambungkan lagi. Hubungi kami untuk setup.',
+        'success' => 'Sync berjaya untuk :count akaun.',
+        'partial' => ':succeeded akaun berjaya disync, :failed gagal. Cuba lagi sebentar lagi atau hubungi kami.',
+    ],
+
     'admin' => [
         'nav' => [
             'section' => 'Admin',
