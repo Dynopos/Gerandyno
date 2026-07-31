@@ -96,6 +96,29 @@ class SalesplayAccountController extends Controller
     {
         $this->authorize('update', $salesplayAccount);
 
+        return $this->runSync($salesplayAccount);
+    }
+
+    /**
+     * Forces a full historical re-fetch by resetting last_synced_at, then
+     * syncs — for recovering receipts a past bug silently dropped (e.g. a
+     * sync race condition since fixed), since the normal incremental sync
+     * only ever looks forward from last_synced_at and would never retry
+     * them on its own. Safe to run any time: already-synced receipts are
+     * skipped via the existing idempotent exists() check, so this can never
+     * create duplicates — it can only fill in gaps.
+     */
+    public function resync(SalesplayAccount $salesplayAccount): RedirectResponse
+    {
+        $this->authorize('update', $salesplayAccount);
+
+        $salesplayAccount->update(['last_synced_at' => null]);
+
+        return $this->runSync($salesplayAccount);
+    }
+
+    private function runSync(SalesplayAccount $salesplayAccount): RedirectResponse
+    {
         // Peek at the job's own lock before dispatching: a sync already in
         // progress (e.g. the 15-minute scheduler running for this account
         // at this exact moment) isn't a failure, but the job silently
