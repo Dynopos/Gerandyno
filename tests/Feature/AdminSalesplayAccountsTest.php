@@ -5,6 +5,12 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\SalesplayAccount;
 use App\Models\User;
+use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
+use App\Services\SalesPlay\DTO\SalesPlayReceiptPage;
+use App\Services\SalesPlay\DTO\SalesPlayShiftPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockInPage;
+use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -119,6 +125,54 @@ class AdminSalesplayAccountsTest extends TestCase
         $this->assertNull($account->last_sync_status);
     }
 
+    public function test_resync_resets_last_synced_at_so_the_sync_service_does_a_full_historical_fetch(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Lengkap', 'last_synced_at' => now()->subDays(10)]);
+
+        $fake = new class implements SalesPlayApiClientInterface
+        {
+            public bool $wasCalled = false;
+
+            public ?CarbonInterface $capturedSince = null;
+
+            public function fetchReceipts(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayReceiptPage
+            {
+                $this->wasCalled = true;
+                $this->capturedSince = $since;
+
+                return new SalesPlayReceiptPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockLevels(?string $shopId, string $apiToken, ?string $cursor): SalesPlayStockLevelPage
+            {
+                return new SalesPlayStockLevelPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchStockIns(?string $shopId, string $apiToken, ?CarbonInterface $since, ?string $cursor): SalesPlayStockInPage
+            {
+                return new SalesPlayStockInPage(items: [], hasMore: false, nextCursor: null);
+            }
+
+            public function fetchShifts(string $apiToken, ?string $cursor): SalesPlayShiftPage
+            {
+                return new SalesPlayShiftPage(items: [], hasMore: false, nextCursor: null);
+            }
+        };
+
+        $this->app->instance(SalesPlayApiClientInterface::class, $fake);
+
+        $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.resync', $account));
+
+        $response->assertRedirect(route('admin.salesplay-accounts.index'));
+
+        $this->assertTrue($fake->wasCalled);
+        $this->assertNull($fake->capturedSince);
+
+        $account->refresh();
+        $this->assertSame('success', $account->last_sync_status);
+    }
+
     public function test_customer_cannot_trigger_a_manual_sync(): void
     {
         $company = Company::factory()->create();
@@ -126,6 +180,15 @@ class AdminSalesplayAccountsTest extends TestCase
         $account = SalesplayAccount::factory()->create(['company_id' => $company->id]);
 
         $this->actingAs($customer)->post(route('admin.salesplay-accounts.sync', $account))->assertForbidden();
+    }
+
+    public function test_customer_cannot_trigger_a_resync(): void
+    {
+        $company = Company::factory()->create();
+        $customer = User::factory()->create(['company_id' => $company->id, 'role' => 'customer']);
+        $account = SalesplayAccount::factory()->create(['company_id' => $company->id]);
+
+        $this->actingAs($customer)->post(route('admin.salesplay-accounts.resync', $account))->assertForbidden();
     }
 
     public function test_customer_cannot_access_the_admin_salesplay_accounts_panel(): void

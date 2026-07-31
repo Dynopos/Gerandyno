@@ -110,6 +110,8 @@ return [
             'add' => 'Tambah Account',
             'edit' => 'Edit Account',
             'sync_now' => 'Sync Sekarang',
+            'resync' => 'Resync Penuh',
+            'resync_confirm' => 'Resync Penuh akan semak SEMULA seluruh sejarah SalesPlay ":name" (bukan cuma yang baru) untuk cari resit yang tertinggal. Ini boleh ambil masa lebih lama drpd sync biasa. Data sedia ada takkan berulang/duplicate. Teruskan?',
             'sync_success' => 'Sync untuk ":name" berjaya.',
             'sync_failed' => 'Sync untuk ":name" gagal: :error',
             'sync_in_progress' => 'Sync untuk ":name" sedang berjalan (mungkin dari jadual automatik). Sila semak semula sebentar lagi.',

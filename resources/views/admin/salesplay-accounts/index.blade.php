@@ -55,6 +55,12 @@
                                                     {{ __('app.admin.salesplay_accounts.sync_now') }}
                                                 </button>
                                             </form>
+                                            <form method="POST" action="{{ route('admin.salesplay-accounts.resync', $account) }}" onsubmit="return confirm('{{ __('app.admin.salesplay_accounts.resync_confirm', ['name' => $account->shop_name]) }}')">
+                                                @csrf
+                                                <button type="submit" class="font-medium text-slate-500 hover:text-violet-700">
+                                                    {{ __('app.admin.salesplay_accounts.resync') }}
+                                                </button>
+                                            </form>
                                             <a href="{{ route('admin.salesplay-accounts.edit', $account) }}" class="font-medium text-violet-600 hover:text-violet-700">
                                                 {{ __('app.admin.salesplay_accounts.edit') }}
                                             </a>

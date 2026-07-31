@@ -110,6 +110,8 @@ return [
             'add' => 'Add Account',
             'edit' => 'Edit Account',
             'sync_now' => 'Sync Now',
+            'resync' => 'Full Resync',
+            'resync_confirm' => 'Full Resync will re-check the entire SalesPlay history for ":name" (not just what is new) to find any receipts that were missed. This can take longer than a normal sync. Existing data will not be duplicated. Continue?',
             'sync_success' => 'Sync for ":name" succeeded.',
             'sync_failed' => 'Sync for ":name" failed: :error',
             'sync_in_progress' => 'Sync for ":name" is already running (possibly from the automatic schedule). Please check back shortly.',
