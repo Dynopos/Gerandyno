@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\SyncSalesPlayAccountJob;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -25,8 +26,22 @@ class SyncController extends Controller
         }
 
         $succeeded = 0;
+        $inProgress = 0;
 
         foreach ($accounts as $account) {
+            // Peek at the job's own lock before dispatching — see the admin
+            // SalesplayAccountController::sync() for why this can't be
+            // detected from the job's own return value or persisted state.
+            $probe = Cache::lock(SyncSalesPlayAccountJob::lockKey($account), 300);
+
+            if (! $probe->get()) {
+                $inProgress++;
+
+                continue;
+            }
+
+            $probe->release();
+
             try {
                 SyncSalesPlayAccountJob::dispatchSync($account);
             } catch (Throwable) {
@@ -38,10 +53,16 @@ class SyncController extends Controller
             }
         }
 
-        $failed = $accounts->count() - $succeeded;
+        $failed = $accounts->count() - $succeeded - $inProgress;
 
-        return back()->with('status', $failed === 0
-            ? __('app.sync.success', ['count' => $succeeded])
-            : __('app.sync.partial', ['succeeded' => $succeeded, 'failed' => $failed]));
+        if ($failed === 0 && $inProgress === 0) {
+            return back()->with('status', __('app.sync.success', ['count' => $succeeded]));
+        }
+
+        if ($failed === 0 && $succeeded === 0) {
+            return back()->with('status', __('app.sync.in_progress'));
+        }
+
+        return back()->with('status', __('app.sync.partial', ['succeeded' => $succeeded, 'failed' => $failed]));
     }
 }

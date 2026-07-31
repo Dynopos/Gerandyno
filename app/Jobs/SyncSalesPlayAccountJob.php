@@ -34,6 +34,16 @@ class SyncSalesPlayAccountJob implements ShouldQueue
         public readonly SalesplayAccount $account,
     ) {}
 
+    /**
+     * Shared with callers that want to check up front whether a sync for
+     * this account is already in progress, without needing to duplicate the
+     * key format themselves.
+     */
+    public static function lockKey(SalesplayAccount $account): string
+    {
+        return "salesplay-sync-account-{$account->id}";
+    }
+
     public function handle(SalesPlaySyncService $syncService): void
     {
         // Guards against two syncs for the same account racing each other —
@@ -42,7 +52,7 @@ class SyncSalesPlayAccountJob implements ShouldQueue
         // Without this, both attempts pass the "does this receipt already
         // exist" check before either has committed, then collide on the
         // database's unique constraint when they both try to insert it.
-        $lock = Cache::lock("salesplay-sync-account-{$this->account->id}", 300);
+        $lock = Cache::lock(self::lockKey($this->account), 300);
 
         if (! $lock->get()) {
             Log::info('SalesPlay sync skipped: already in progress', [

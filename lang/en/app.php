@@ -48,6 +48,7 @@ return [
         'no_accounts' => 'No SalesPlay account connected yet. Contact us to get set up.',
         'success' => 'Sync succeeded for :count account(s).',
         'partial' => ':succeeded account(s) synced successfully, :failed failed. Try again shortly or contact us.',
+        'in_progress' => 'Sync is already running (possibly from the automatic schedule). Please check back shortly.',
     ],
 
     'admin' => [
@@ -111,6 +112,7 @@ return [
             'sync_now' => 'Sync Now',
             'sync_success' => 'Sync for ":name" succeeded.',
             'sync_failed' => 'Sync for ":name" failed: :error',
+            'sync_in_progress' => 'Sync for ":name" is already running (possibly from the automatic schedule). Please check back shortly.',
             'company' => 'Company',
             'shop_name' => 'Shop Name',
             'shop_id' => 'SalesPlay Shop ID',

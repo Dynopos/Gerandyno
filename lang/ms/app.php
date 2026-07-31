@@ -48,6 +48,7 @@ return [
         'no_accounts' => 'Tiada akaun SalesPlay disambungkan lagi. Hubungi kami untuk setup.',
         'success' => 'Sync berjaya untuk :count akaun.',
         'partial' => ':succeeded akaun berjaya disync, :failed gagal. Cuba lagi sebentar lagi atau hubungi kami.',
+        'in_progress' => 'Sync sedang berjalan (mungkin dari jadual automatik). Sila semak semula sebentar lagi.',
     ],
 
     'admin' => [
@@ -111,6 +112,7 @@ return [
             'sync_now' => 'Sync Sekarang',
             'sync_success' => 'Sync untuk ":name" berjaya.',
             'sync_failed' => 'Sync untuk ":name" gagal: :error',
+            'sync_in_progress' => 'Sync untuk ":name" sedang berjalan (mungkin dari jadual automatik). Sila semak semula sebentar lagi.',
             'company' => 'Company',
             'shop_name' => 'Nama Kedai',
             'shop_id' => 'SalesPlay Shop ID',

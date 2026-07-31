@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\SalesplayAccount;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
 
@@ -94,6 +95,24 @@ class SalesplayAccountController extends Controller
     public function sync(SalesplayAccount $salesplayAccount): RedirectResponse
     {
         $this->authorize('update', $salesplayAccount);
+
+        // Peek at the job's own lock before dispatching: a sync already in
+        // progress (e.g. the 15-minute scheduler running for this account
+        // at this exact moment) isn't a failure, but the job silently
+        // returns without touching last_sync_status/last_sync_error when
+        // that happens — so without checking this first, that case would
+        // fall into the "failed" branch below with a blank error message.
+        // We release immediately so the job can re-acquire it cleanly for
+        // the real run; the tiny window between release and the job's own
+        // acquire is an acceptable tradeoff for an accurate status message.
+        $probe = Cache::lock(SyncSalesPlayAccountJob::lockKey($salesplayAccount), 300);
+
+        if (! $probe->get()) {
+            return redirect()->route('admin.salesplay-accounts.index')
+                ->with('status', __('app.admin.salesplay_accounts.sync_in_progress', ['name' => $salesplayAccount->shop_name]));
+        }
+
+        $probe->release();
 
         try {
             SyncSalesPlayAccountJob::dispatchSync($salesplayAccount);

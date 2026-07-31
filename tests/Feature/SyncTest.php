@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\SalesplayAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class SyncTest extends TestCase
@@ -58,5 +59,28 @@ class SyncTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)->post(route('sync.store'))->assertForbidden();
+    }
+
+    public function test_shows_an_in_progress_message_instead_of_a_false_failure_when_already_locked(): void
+    {
+        $company = Company::factory()->create();
+        $account = SalesplayAccount::factory()->create(['company_id' => $company->id, 'last_synced_at' => null]);
+        $user = User::factory()->create(['company_id' => $company->id, 'role' => 'customer']);
+
+        $lock = Cache::lock("salesplay-sync-account-{$account->id}", 300);
+        $this->assertTrue($lock->get());
+
+        try {
+            $response = $this->actingAs($user)->post(route('sync.store'));
+
+            $response->assertRedirect();
+            $response->assertSessionHas('status', __('app.sync.in_progress'));
+        } finally {
+            $lock->release();
+        }
+
+        $account->refresh();
+        $this->assertNull($account->last_synced_at);
+        $this->assertNull($account->last_sync_status);
     }
 }

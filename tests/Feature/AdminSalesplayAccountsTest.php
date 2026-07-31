@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\SalesplayAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class AdminSalesplayAccountsTest extends TestCase
@@ -93,6 +94,29 @@ class AdminSalesplayAccountsTest extends TestCase
         $account->refresh();
         $this->assertNotNull($account->last_synced_at);
         $this->assertSame('success', $account->last_sync_status);
+    }
+
+    public function test_sync_shows_an_in_progress_message_instead_of_a_false_failure_when_already_locked(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Sibuk', 'last_synced_at' => null]);
+
+        $lock = Cache::lock("salesplay-sync-account-{$account->id}", 300);
+        $this->assertTrue($lock->get());
+
+        try {
+            $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.sync', $account));
+
+            $response->assertRedirect(route('admin.salesplay-accounts.index'));
+            $response->assertSessionHas('status', __('app.admin.salesplay_accounts.sync_in_progress', ['name' => 'Kedai Sibuk']));
+        } finally {
+            $lock->release();
+        }
+
+        // Skipped, not failed — the account's own status must stay untouched.
+        $account->refresh();
+        $this->assertNull($account->last_synced_at);
+        $this->assertNull($account->last_sync_status);
     }
 
     public function test_customer_cannot_trigger_a_manual_sync(): void
