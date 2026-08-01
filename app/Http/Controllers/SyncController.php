@@ -27,6 +27,7 @@ class SyncController extends Controller
 
         $succeeded = 0;
         $inProgress = 0;
+        $queued = 0;
 
         foreach ($accounts as $account) {
             // Peek at the job's own lock before dispatching — see the admin
@@ -42,6 +43,21 @@ class SyncController extends Controller
 
             $probe->release();
 
+            // A null last_synced_at means a full historical fetch (a true
+            // first sync, or right after an admin's Resync Penuh) — an
+            // account with a lot of receipts can take longer to page
+            // through than the web request allows, silently truncating the
+            // sync before last_synced_at ever gets set. Queue it instead so
+            // it isn't bound by the request's time limit; a scheduled
+            // queue:work picks it up within the minute (see
+            // routes/console.php).
+            if ($account->last_synced_at === null) {
+                SyncSalesPlayAccountJob::dispatch($account);
+                $queued++;
+
+                continue;
+            }
+
             try {
                 SyncSalesPlayAccountJob::dispatchSync($account);
             } catch (Throwable) {
@@ -53,13 +69,17 @@ class SyncController extends Controller
             }
         }
 
-        $failed = $accounts->count() - $succeeded - $inProgress;
+        $failed = $accounts->count() - $succeeded - $inProgress - $queued;
 
-        if ($failed === 0 && $inProgress === 0) {
+        if ($queued > 0 && $succeeded === 0 && $failed === 0 && $inProgress === 0) {
+            return back()->with('status', __('app.sync.queued'));
+        }
+
+        if ($failed === 0 && $inProgress === 0 && $queued === 0) {
             return back()->with('status', __('app.sync.success', ['count' => $succeeded]));
         }
 
-        if ($failed === 0 && $succeeded === 0) {
+        if ($failed === 0 && $succeeded === 0 && $queued === 0) {
             return back()->with('status', __('app.sync.in_progress'));
         }
 
