@@ -49,6 +49,7 @@ return [
         'success' => 'Sync succeeded for :count account(s).',
         'partial' => ':succeeded account(s) synced successfully, :failed failed. Try again shortly or contact us.',
         'in_progress' => 'Sync is already running (possibly from the automatic schedule). Please check back shortly.',
+        'queued' => 'A full sync is now running in the background (a lot of historical data can take a few minutes). Check "Last Synced" shortly to confirm it is done.',
     ],
 
     'admin' => [
@@ -115,6 +116,7 @@ return [
             'sync_success' => 'Sync for ":name" succeeded.',
             'sync_failed' => 'Sync for ":name" failed: :error',
             'sync_in_progress' => 'Sync for ":name" is already running (possibly from the automatic schedule). Please check back shortly.',
+            'sync_queued' => 'A full sync for ":name" is now running in the background (a lot of historical data can take a few minutes). Check "Last Synced" shortly to confirm it is done.',
             'company' => 'Company',
             'shop_name' => 'Shop Name',
             'shop_id' => 'SalesPlay Shop ID',

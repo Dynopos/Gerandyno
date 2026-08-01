@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\SyncSalesPlayAccountJob;
 use App\Models\Company;
 use App\Models\SalesplayAccount;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Services\SalesPlay\DTO\SalesPlayStockLevelPage;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AdminSalesplayAccountsTest extends TestCase
@@ -100,6 +102,59 @@ class AdminSalesplayAccountsTest extends TestCase
         $account->refresh();
         $this->assertNotNull($account->last_synced_at);
         $this->assertSame('success', $account->last_sync_status);
+    }
+
+    public function test_first_time_sync_is_queued_instead_of_run_inline(): void
+    {
+        Queue::fake();
+
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Baru', 'last_synced_at' => null]);
+
+        $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.sync', $account));
+
+        $response->assertRedirect(route('admin.salesplay-accounts.index'));
+        $response->assertSessionHas('status', __('app.admin.salesplay_accounts.sync_queued', ['name' => 'Kedai Baru']));
+
+        Queue::assertPushed(SyncSalesPlayAccountJob::class, fn (SyncSalesPlayAccountJob $job) => $job->account->is($account));
+
+        // Queued, not yet run — nothing should have executed inline.
+        $account->refresh();
+        $this->assertNull($account->last_synced_at);
+    }
+
+    public function test_incremental_sync_still_runs_inline_for_immediate_feedback(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Lama', 'last_synced_at' => now()->subDay()]);
+
+        $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.sync', $account));
+
+        // Ran synchronously within the same request (not merely queued) —
+        // last_sync_status is already set by the time we get the response,
+        // using the mock client bound by default in this environment.
+        $response->assertSessionHas('status', __('app.admin.salesplay_accounts.sync_success', ['name' => 'Kedai Lama']));
+
+        $account->refresh();
+        $this->assertSame('success', $account->last_sync_status);
+    }
+
+    public function test_resync_is_queued_instead_of_run_inline(): void
+    {
+        Queue::fake();
+
+        $admin = User::factory()->admin()->create();
+        $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Resync Q', 'last_synced_at' => now()->subDays(5)]);
+
+        $response = $this->actingAs($admin)->post(route('admin.salesplay-accounts.resync', $account));
+
+        $response->assertRedirect(route('admin.salesplay-accounts.index'));
+        $response->assertSessionHas('status', __('app.admin.salesplay_accounts.sync_queued', ['name' => 'Kedai Resync Q']));
+
+        Queue::assertPushed(SyncSalesPlayAccountJob::class);
+
+        $account->refresh();
+        $this->assertNull($account->last_synced_at);
     }
 
     public function test_sync_shows_an_in_progress_message_instead_of_a_false_failure_when_already_locked(): void

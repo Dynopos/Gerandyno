@@ -49,6 +49,7 @@ return [
         'success' => 'Sync berjaya untuk :count akaun.',
         'partial' => ':succeeded akaun berjaya disync, :failed gagal. Cuba lagi sebentar lagi atau hubungi kami.',
         'in_progress' => 'Sync sedang berjalan (mungkin dari jadual automatik). Sila semak semula sebentar lagi.',
+        'queued' => 'Sync lengkap sedang diproses di latar belakang (data sejarah yang banyak boleh ambil beberapa minit). Semak "Sync Terakhir" sebentar lagi untuk pastikan siap.',
     ],
 
     'admin' => [
@@ -115,6 +116,7 @@ return [
             'sync_success' => 'Sync untuk ":name" berjaya.',
             'sync_failed' => 'Sync untuk ":name" gagal: :error',
             'sync_in_progress' => 'Sync untuk ":name" sedang berjalan (mungkin dari jadual automatik). Sila semak semula sebentar lagi.',
+            'sync_queued' => 'Sync lengkap untuk ":name" sedang diproses di latar belakang (data sejarah yang banyak boleh ambil beberapa minit). Semak "Sync Terakhir" sebentar lagi untuk pastikan siap.',
             'company' => 'Company',
             'shop_name' => 'Nama Kedai',
             'shop_id' => 'SalesPlay Shop ID',

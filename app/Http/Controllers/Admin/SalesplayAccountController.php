@@ -137,6 +137,21 @@ class SalesplayAccountController extends Controller
 
         $probe->release();
 
+        // A null last_synced_at means this is a full historical fetch (a
+        // true first sync, or right after Resync Penuh) rather than a quick
+        // incremental one — an account with hundreds of receipts can take
+        // longer to page through than the web server allows a single
+        // request to run, silently truncating the sync before it reaches
+        // last_synced_at ever getting set. Queue it instead so it isn't
+        // bound by the request's time limit; a scheduled queue:work picks
+        // it up within the minute (see routes/console.php).
+        if ($salesplayAccount->last_synced_at === null) {
+            SyncSalesPlayAccountJob::dispatch($salesplayAccount);
+
+            return redirect()->route('admin.salesplay-accounts.index')
+                ->with('status', __('app.admin.salesplay_accounts.sync_queued', ['name' => $salesplayAccount->shop_name]));
+        }
+
         try {
             SyncSalesPlayAccountJob::dispatchSync($salesplayAccount);
         } catch (Throwable) {
