@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reports\AiInsightController;
 use App\Http\Controllers\Reports\CustomerReportController;
 use App\Http\Controllers\Reports\InventoryReportController;
 use App\Http\Controllers\Reports\MonthlyReportController;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/inventory/adjustment', [StockAdjustmentController::class, 'create'])->name('inventory.adjustment.create');
         Route::post('/inventory/adjustment', [StockAdjustmentController::class, 'store'])->name('inventory.adjustment.store');
         Route::post('/inventory/reset', [StockAdjustmentController::class, 'resetAll'])->name('inventory.reset');
+        Route::get('/ai', [AiInsightController::class, 'index'])->name('ai.index');
+        Route::post('/ai', [AiInsightController::class, 'generate'])->middleware('throttle:6,1')->name('ai.generate');
         Route::get('/pnl', [PnlReportController::class, 'index'])->name('pnl');
         Route::get('/pnl/export/{format}', [PnlReportController::class, 'export'])->name('pnl.export');
         Route::post('/pnl/email', [PnlReportController::class, 'email'])->middleware('throttle:6,1')->name('pnl.email');
