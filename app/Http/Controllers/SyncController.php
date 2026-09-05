@@ -52,8 +52,17 @@ class SyncController extends Controller
             // queue:work picks it up within the minute (see
             // routes/console.php).
             if ($account->last_synced_at === null) {
-                SyncSalesPlayAccountJob::dispatch($account);
-                $queued++;
+                try {
+                    SyncSalesPlayAccountJob::dispatch($account);
+                    $queued++;
+                } catch (Throwable) {
+                    // On a queue connection that runs jobs inline (`sync`),
+                    // dispatch() *is* the sync — so a failing sync throws
+                    // here instead of in a worker. Already logged and
+                    // persisted onto the account by the job itself; falls
+                    // through to the "failed" tally below rather than
+                    // becoming a 500 page.
+                }
 
                 continue;
             }

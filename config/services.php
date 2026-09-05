@@ -52,6 +52,14 @@ return [
     'salesplay' => [
         'base_url' => env('SALESPLAY_BASE_URL'),
         'timeout' => env('SALESPLAY_TIMEOUT', 30),
+
+        // How far back a first sync reaches. The real API rejects an
+        // open-ended range outright ("The requested date range is not
+        // supported", on created_at_min), so an account's first sync has to
+        // name a concrete start date rather than "everything". Configurable
+        // because SalesPlay does not document the limit: lower it if a first
+        // sync still comes back rejected, raise it to keep more history.
+        'initial_sync_months' => env('SALESPLAY_INITIAL_SYNC_MONTHS', 12),
     ],
 
     /*

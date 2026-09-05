@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\SalesPlay\Contracts\SalesPlayApiClientInterface;
 use App\Services\SalesPlay\SalesPlayApiClient;
 use App\Services\SalesPlay\SalesPlayMockApiClient;
+use App\Services\SalesPlay\SalesPlaySyncService;
 use Illuminate\Support\ServiceProvider;
 
 class SalesPlayServiceProvider extends ServiceProvider
@@ -29,6 +30,13 @@ class SalesPlayServiceProvider extends ServiceProvider
             return new SalesPlayApiClient(
                 baseUrl: $config['base_url'],
                 timeout: (int) ($config['timeout'] ?? 30),
+            );
+        });
+
+        $this->app->bind(SalesPlaySyncService::class, function () {
+            return new SalesPlaySyncService(
+                client: $this->app->make(SalesPlayApiClientInterface::class),
+                initialSyncMonths: (int) $this->app['config']->get('services.salesplay.initial_sync_months', 12),
             );
         });
     }
