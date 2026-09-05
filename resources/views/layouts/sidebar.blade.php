@@ -124,6 +124,16 @@
             {{ __('app.nav.expenses') }}
         </x-sidebar-link>
 
+        <x-sidebar-link :href="route('reports.ai.index')" :active="request()->routeIs('reports.ai.*')">
+            <x-slot name="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                    <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z" />
+                    <path d="M18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8L18 16z" />
+                </svg>
+            </x-slot>
+            {{ __('app.nav.ai') }}
+        </x-sidebar-link>
+
         <x-sidebar-link :href="route('reports.pnl')" :active="request()->routeIs('reports.pnl')">
             <x-slot name="icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">

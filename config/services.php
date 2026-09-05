@@ -54,4 +54,24 @@ return [
         'timeout' => env('SALESPLAY_TIMEOUT', 30),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | OpenAI (AI weekly sales review)
+    |--------------------------------------------------------------------------
+    |
+    | Powers /reports/ai — the weekly sales review written for the merchant.
+    | api_key is intentionally blank by default: with no key configured the
+    | page still shows the week's figures and tells the admin the AI review
+    | isn't set up yet, rather than erroring. The model is configurable so
+    | it can be changed as OpenAI's line-up moves, without a code change.
+    |
+    */
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'timeout' => env('OPENAI_TIMEOUT', 60),
+    ],
+
 ];
