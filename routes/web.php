@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\CompanyUserController;
+use App\Http\Controllers\Admin\CompanyUserPasswordController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerImportController;
 use App\Http\Controllers\Admin\SalesplayAccountController;
@@ -72,6 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('companies', CompanyController::class)->except('show');
         Route::get('/companies/{company}/users/create', [CompanyUserController::class, 'create'])->name('companies.users.create');
         Route::post('/companies/{company}/users', [CompanyUserController::class, 'store'])->name('companies.users.store');
+        // scopeBindings: a {user} that doesn't belong to the {company} 404s
+        // rather than resolving, so one company's admin URL can never reach
+        // another company's login.
+        Route::get('/companies/{company}/users/{user}/password', [CompanyUserPasswordController::class, 'edit'])->scopeBindings()->name('companies.users.password.edit');
+        Route::put('/companies/{company}/users/{user}/password', [CompanyUserPasswordController::class, 'update'])->scopeBindings()->name('companies.users.password.update');
         Route::resource('salesplay-accounts', SalesplayAccountController::class)->except('show');
         Route::post('/salesplay-accounts/{salesplayAccount}/sync', [SalesplayAccountController::class, 'sync'])->name('salesplay-accounts.sync');
         Route::post('/salesplay-accounts/{salesplayAccount}/resync', [SalesplayAccountController::class, 'resync'])->name('salesplay-accounts.resync');

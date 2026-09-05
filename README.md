@@ -171,6 +171,15 @@ sidebar with two CRUD screens, gated by the `admin` route middleware
 - `/admin/companies` — create/edit/deactivate/delete customer companies.
   Deleting a company cascades to all of its users, SalesPlay accounts,
   products, and receipts.
+- Each company's edit page lists its customer logins with a **Reset Password**
+  action (`/admin/companies/{company}/users/{user}/password`). The self-service
+  "forgot password" flow needs working outbound mail *and* a merchant who still
+  has their signup mailbox; this is the fallback for when either is missing —
+  the admin sets a password and passes it on by phone. The `{user}` binding is
+  scoped to the `{company}` (so one company's URL can't reach another's login)
+  and admins carry no `company_id`, so no admin account is reachable through
+  it. Resetting also rotates `remember_token`, so a device that ticked
+  "remember me" under the old password is signed out.
 - `/admin/salesplay-accounts` — provision SalesPlay accounts for any company
   and manage their API tokens. The token field is write-only: it's never
   redisplayed after saving (the model hides it from serialization and
