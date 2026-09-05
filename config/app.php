@@ -59,13 +59,18 @@ return [
     | Application Timezone
     |--------------------------------------------------------------------------
     |
-    | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | Every shop on DynoPOS trades in Malaysia, and every report here is
+    | about a Malaysian business day — "today's sales", "this month",
+    | shift open/close times. SalesPlay also reports its receipt timestamps
+    | in Malaysia local time.
+    |
+    | On UTC this drifted: between midnight and 8am local, `today()` still
+    | resolved to the *previous* Malaysian day, so a late-night shop's sales
+    | after midnight landed in the wrong day's report.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Kuala_Lumpur',
 
     /*
     |--------------------------------------------------------------------------
