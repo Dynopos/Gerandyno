@@ -49,6 +49,8 @@ class CompanyController extends Controller
     {
         $this->authorize('update', $company);
 
+        $company->load(['users' => fn ($query) => $query->orderBy('name')]);
+
         return view('admin.companies.edit', [
             'company' => $company,
         ]);
