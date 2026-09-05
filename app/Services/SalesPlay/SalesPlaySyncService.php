@@ -22,6 +22,7 @@ use App\Services\SalesPlay\Exceptions\SalesPlayApiException;
 use Carbon\CarbonInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Pulls new receipts for a single SalesPlay account and persists them.
@@ -36,13 +37,26 @@ use Illuminate\Support\Facades\DB;
 class SalesPlaySyncService
 {
     /**
-     * Safety net against a misbehaving/infinite pagination cursor.
+     * Safety net against a misbehaving/infinite pagination cursor — not a
+     * cap on how much history is worth syncing. At 100 receipts a page this
+     * still covers half a million receipts, which is far past what any
+     * runaway cursor would need to prove itself broken, while leaving room
+     * for a busy shop's full backfill (a single outlet can ring up several
+     * thousand receipts a month).
      */
-    private const MAX_PAGES = 500;
+    private const DEFAULT_MAX_PAGES = 5000;
+
+    /**
+     * How often a long-running sync reports where it has got to. A full
+     * backfill can run for many minutes; without this it is silent until it
+     * either finishes or fails, with no way to tell which is happening.
+     */
+    private const LOG_PROGRESS_EVERY_PAGES = 50;
 
     public function __construct(
         private readonly SalesPlayApiClientInterface $client,
         private readonly int $initialSyncMonths = 12,
+        private readonly int $maxPages = self::DEFAULT_MAX_PAGES,
     ) {}
 
     /**
@@ -61,9 +75,9 @@ class SalesPlaySyncService
         $page = 0;
 
         do {
-            if (++$page > self::MAX_PAGES) {
+            if (++$page > $this->maxPages) {
                 throw new SalesPlayApiException(
-                    "SalesPlay sync for account [{$account->id}] exceeded ".self::MAX_PAGES.' pages; aborting.'
+                    "SalesPlay sync for account [{$account->id}] exceeded ".$this->maxPages.' pages; aborting.'
                 );
             }
 
@@ -82,6 +96,16 @@ class SalesPlaySyncService
                 } else {
                     $skipped++;
                 }
+            }
+
+            if ($page % self::LOG_PROGRESS_EVERY_PAGES === 0) {
+                Log::info('SalesPlay sync in progress', [
+                    'salesplay_account_id' => $account->id,
+                    'company_id' => $account->company_id,
+                    'pages' => $page,
+                    'synced' => $synced,
+                    'skipped' => $skipped,
+                ]);
             }
 
             $cursor = $result->nextCursor;
@@ -145,9 +169,9 @@ class SalesPlaySyncService
         $page = 0;
 
         do {
-            if (++$page > self::MAX_PAGES) {
+            if (++$page > $this->maxPages) {
                 throw new SalesPlayApiException(
-                    "SalesPlay stock level sync for account [{$account->id}] exceeded ".self::MAX_PAGES.' pages; aborting.'
+                    "SalesPlay stock level sync for account [{$account->id}] exceeded ".$this->maxPages.' pages; aborting.'
                 );
             }
 
@@ -196,9 +220,9 @@ class SalesPlaySyncService
         $page = 0;
 
         do {
-            if (++$page > self::MAX_PAGES) {
+            if (++$page > $this->maxPages) {
                 throw new SalesPlayApiException(
-                    "SalesPlay stock-in sync for account [{$account->id}] exceeded ".self::MAX_PAGES.' pages; aborting.'
+                    "SalesPlay stock-in sync for account [{$account->id}] exceeded ".$this->maxPages.' pages; aborting.'
                 );
             }
 
@@ -274,9 +298,9 @@ class SalesPlaySyncService
         $page = 0;
 
         do {
-            if (++$page > self::MAX_PAGES) {
+            if (++$page > $this->maxPages) {
                 throw new SalesPlayApiException(
-                    "SalesPlay shift sync for account [{$account->id}] exceeded ".self::MAX_PAGES.' pages; aborting.'
+                    "SalesPlay shift sync for account [{$account->id}] exceeded ".$this->maxPages.' pages; aborting.'
                 );
             }
 
