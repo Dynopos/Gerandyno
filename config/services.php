@@ -60,6 +60,11 @@ return [
         // because SalesPlay does not document the limit: lower it if a first
         // sync still comes back rejected, raise it to keep more history.
         'initial_sync_months' => env('SALESPLAY_INITIAL_SYNC_MONTHS', 12),
+
+        // Runaway-cursor guard, not a history cap. Raise it only if a
+        // legitimate backfill for a very busy shop is aborting; lowering it
+        // makes a broken cursor fail faster but risks cutting a real sync short.
+        'max_sync_pages' => env('SALESPLAY_MAX_SYNC_PAGES', 5000),
     ],
 
     /*

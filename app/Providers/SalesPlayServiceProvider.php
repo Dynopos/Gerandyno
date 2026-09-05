@@ -37,6 +37,7 @@ class SalesPlayServiceProvider extends ServiceProvider
             return new SalesPlaySyncService(
                 client: $this->app->make(SalesPlayApiClientInterface::class),
                 initialSyncMonths: (int) $this->app['config']->get('services.salesplay.initial_sync_months', 12),
+                maxPages: (int) $this->app['config']->get('services.salesplay.max_sync_pages', 5000),
             );
         });
     }

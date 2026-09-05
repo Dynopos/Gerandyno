@@ -204,6 +204,28 @@ still rejected; raise it to keep more history. Later syncs are incremental and
 resume from `last_synced_at` as before, so this only governs the very first
 fetch.
 
+**Why the history matters here:** SalesPlay puts past months behind its own
+subscription, and the API enforces the same limit the UI does — a shop whose
+plan has lapsed gets `INVALID_VALUE` on `created_at_min` rather than old
+receipts. Anything DynoPOS has not already synced can therefore become
+permanently unreachable, which is the whole reason this app exists. The
+practical consequence: a merchant who subscribes for a single month can run
+one **Resync Penuh** in that window and keep their full history in DynoPOS for
+good.
+
+That backfill has to be able to finish, so the pagination guard is
+configurable too:
+
+```
+SALESPLAY_MAX_SYNC_PAGES=5000
+```
+
+It exists to stop a runaway pagination cursor, **not** to cap history — at 100
+receipts a page the default covers 500,000 receipts, well past a busy outlet's
+full backfill (one shop can ring up several thousand receipts a month, so 30
+months is ~1,300 pages). A long sync logs its progress every 50 pages, so a
+backfill that runs for minutes can be watched rather than guessed at.
+
 ```bash
 php artisan salesplay:sync           # dispatches one queued job per active account
 php artisan salesplay:sync --now     # runs all accounts synchronously, no queue worker needed
