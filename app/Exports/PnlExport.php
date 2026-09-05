@@ -14,6 +14,8 @@ class PnlExport implements FromCollection, WithHeadings, WithMapping
      */
     public function __construct(
         private readonly float $totalSales,
+        private readonly float $totalTax,
+        private readonly float $netSales,
         private readonly Collection $expensesByCategory,
         private readonly float $totalExpenses,
         private readonly float $netProfit,
@@ -23,6 +25,8 @@ class PnlExport implements FromCollection, WithHeadings, WithMapping
     {
         $rows = collect([
             ['label' => __('app.reports.pnl.total_sales'), 'amount' => $this->totalSales],
+            ['label' => __('app.reports.pnl.tax_collected'), 'amount' => -$this->totalTax],
+            ['label' => __('app.reports.pnl.net_sales'), 'amount' => $this->netSales],
         ]);
 
         foreach ($this->expensesByCategory as $expense) {

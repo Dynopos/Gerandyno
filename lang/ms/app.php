@@ -261,6 +261,7 @@ return [
             'payment_method' => 'Kaedah Bayaran',
             'total' => 'Jumlah',
             'back_to_list' => '&larr; Laporan Jualan',
+            'tax_collected' => 'Cukai Dikutip',
         ],
         'monthly' => [
             'title' => 'Laporan Bulanan',
@@ -362,6 +363,8 @@ return [
             'title' => 'Penyata Untung Rugi',
             'subtitle' => 'Jualan tolak perbelanjaan bagi tempoh dipilih',
             'total_sales' => 'Jumlah Jualan',
+            'tax_collected' => 'Cukai Dikutip (bukan pendapatan anda)',
+            'net_sales' => 'Jualan Bersih (selepas cukai)',
             'expenses_heading' => 'Perbelanjaan',
             'no_expenses' => 'Tiada perbelanjaan untuk tempoh ini.',
             'total_expenses' => 'Jumlah Perbelanjaan',

@@ -40,6 +40,7 @@ class SalesReportController extends Controller
             'receipts' => $receipts,
             'periodTotal' => $this->reports->totalBetween($period->start, $period->end),
             'periodCount' => $this->reports->countBetween($period->start, $period->end),
+            'periodTax' => $this->reports->taxBetween($period->start, $period->end),
             'filterOptions' => ReportPeriodResolver::options(),
         ]);
     }
