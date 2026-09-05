@@ -146,10 +146,24 @@ class SalesplayAccountController extends Controller
         // bound by the request's time limit; a scheduled queue:work picks
         // it up within the minute (see routes/console.php).
         if ($salesplayAccount->last_synced_at === null) {
-            SyncSalesPlayAccountJob::dispatch($salesplayAccount);
+            try {
+                SyncSalesPlayAccountJob::dispatch($salesplayAccount);
 
-            return redirect()->route('admin.salesplay-accounts.index')
-                ->with('status', __('app.admin.salesplay_accounts.sync_queued', ['name' => $salesplayAccount->shop_name]));
+                return redirect()->route('admin.salesplay-accounts.index')
+                    ->with('status', __('app.admin.salesplay_accounts.sync_queued', ['name' => $salesplayAccount->shop_name]));
+            } catch (Throwable) {
+                // On a queue connection that runs jobs inline (`sync`),
+                // dispatch() *is* the sync, so a failure throws here rather
+                // than in a worker. Report it like any other failed sync
+                // instead of letting it become a 500 page.
+                $salesplayAccount->refresh();
+
+                return redirect()->route('admin.salesplay-accounts.index')
+                    ->with('status', __('app.admin.salesplay_accounts.sync_failed', [
+                        'name' => $salesplayAccount->shop_name,
+                        'error' => $salesplayAccount->last_sync_error,
+                    ]));
+            }
         }
 
         try {

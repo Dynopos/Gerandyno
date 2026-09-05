@@ -180,7 +180,13 @@ class AdminSalesplayAccountsTest extends TestCase
         $this->assertNull($account->last_sync_status);
     }
 
-    public function test_resync_resets_last_synced_at_so_the_sync_service_does_a_full_historical_fetch(): void
+    /**
+     * Resync Penuh clears last_synced_at so the next sync starts from the
+     * configured initial window rather than resuming mid-history. It is not
+     * an open-ended "everything" request — the real API rejects those
+     * outright on created_at_min.
+     */
+    public function test_resync_resets_last_synced_at_so_the_next_sync_starts_from_the_initial_window(): void
     {
         $admin = User::factory()->admin()->create();
         $account = SalesplayAccount::factory()->create(['shop_name' => 'Kedai Lengkap', 'last_synced_at' => now()->subDays(10)]);
@@ -222,7 +228,9 @@ class AdminSalesplayAccountsTest extends TestCase
         $response->assertRedirect(route('admin.salesplay-accounts.index'));
 
         $this->assertTrue($fake->wasCalled);
-        $this->assertNull($fake->capturedSince);
+        $this->assertNotNull($fake->capturedSince);
+        $this->assertTrue($fake->capturedSince->isAfter(now()->subMonths(13)));
+        $this->assertTrue($fake->capturedSince->isBefore(now()));
 
         $account->refresh();
         $this->assertSame('success', $account->last_sync_status);

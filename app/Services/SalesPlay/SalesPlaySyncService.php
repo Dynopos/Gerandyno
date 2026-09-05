@@ -42,6 +42,7 @@ class SalesPlaySyncService
 
     public function __construct(
         private readonly SalesPlayApiClientInterface $client,
+        private readonly int $initialSyncMonths = 12,
     ) {}
 
     /**
@@ -50,7 +51,10 @@ class SalesPlaySyncService
     public function sync(SalesplayAccount $account): SalesPlaySyncResult
     {
         $syncStartedAt = now();
-        $since = $account->last_synced_at;
+        // Never null: the API rejects a request whose created_at_min is
+        // further back than it supports, so a first sync names a concrete
+        // start date instead of asking for all of history.
+        $since = $account->last_synced_at ?? $this->initialSyncStart();
         $cursor = null;
         $synced = 0;
         $skipped = 0;
@@ -94,6 +98,14 @@ class SalesPlaySyncService
         $this->syncShifts($account);
 
         return new SalesPlaySyncResult(synced: $synced, skipped: $skipped);
+    }
+
+    /**
+     * The start date a first sync (or a Resync Penuh) reaches back to.
+     */
+    private function initialSyncStart(): CarbonInterface
+    {
+        return now()->subMonths($this->initialSyncMonths)->startOfDay();
     }
 
     /**

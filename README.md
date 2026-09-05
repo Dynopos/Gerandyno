@@ -188,6 +188,22 @@ sidebar with two CRUD screens, gated by the `admin` route middleware
 
 ## Running a manual sync
 
+**First sync window.** The real API rejects an open-ended range — it answers
+`INVALID_VALUE` / "The requested date range is not supported" on
+`created_at_min` (with an HTTP 401 status, confusingly, which reads like an
+auth failure but isn't). So an account's first sync — and the sync right after
+an admin's Resync Penuh — names a concrete start date instead of asking for
+all of history:
+
+```
+SALESPLAY_INITIAL_SYNC_MONTHS=12
+```
+
+Read via `services.salesplay.initial_sync_months`. Lower it if a first sync is
+still rejected; raise it to keep more history. Later syncs are incremental and
+resume from `last_synced_at` as before, so this only governs the very first
+fetch.
+
 ```bash
 php artisan salesplay:sync           # dispatches one queued job per active account
 php artisan salesplay:sync --now     # runs all accounts synchronously, no queue worker needed
