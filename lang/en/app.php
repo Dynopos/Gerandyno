@@ -261,6 +261,7 @@ return [
             'payment_method' => 'Payment Method',
             'total' => 'Total',
             'back_to_list' => '&larr; Sales Report',
+            'tax_collected' => 'Tax Collected',
         ],
         'monthly' => [
             'title' => 'Monthly Report',
@@ -362,6 +363,8 @@ return [
             'title' => 'Profit & Loss Statement',
             'subtitle' => 'Sales minus expenses for the selected period',
             'total_sales' => 'Total Sales',
+            'tax_collected' => 'Tax Collected (not your income)',
+            'net_sales' => 'Net Sales (after tax)',
             'expenses_heading' => 'Expenses',
             'no_expenses' => 'No expenses for this period.',
             'total_expenses' => 'Total Expenses',

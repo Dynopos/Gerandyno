@@ -33,6 +33,7 @@ class PnlReportTest extends TestCase
             'company_id' => $company->id,
             'salesplay_account_id' => $account->id,
             'transaction_date' => now(),
+            'tax' => 0,
             'total' => 500,
         ]);
 
@@ -68,6 +69,7 @@ class PnlReportTest extends TestCase
             'company_id' => $company->id,
             'salesplay_account_id' => $account->id,
             'transaction_date' => now()->subYear(),
+            'tax' => 0,
             'total' => 999,
         ]);
 
@@ -102,6 +104,7 @@ class PnlReportTest extends TestCase
             'company_id' => $company->id,
             'salesplay_account_id' => $account->id,
             'transaction_date' => now(),
+            'tax' => 0,
             'total' => 300,
         ]);
 
@@ -135,6 +138,7 @@ class PnlReportTest extends TestCase
             'company_id' => $company->id,
             'salesplay_account_id' => $account->id,
             'transaction_date' => now(),
+            'tax' => 0,
         ]);
 
         $response = $this->actingAs($user)->get('/reports/pnl/export/pdf?filter=today');

@@ -79,6 +79,18 @@
                         <dd class="font-semibold text-slate-900"><x-money :amount="$totalSales" /></dd>
                     </div>
 
+                    @if ($totalTax > 0)
+                        <div class="flex items-center justify-between py-3">
+                            <dt class="text-slate-600">{{ __('app.reports.pnl.tax_collected') }}</dt>
+                            <dd class="text-slate-600">(<x-money :amount="$totalTax" />)</dd>
+                        </div>
+
+                        <div class="flex items-center justify-between py-3">
+                            <dt class="font-semibold text-slate-900">{{ __('app.reports.pnl.net_sales') }}</dt>
+                            <dd class="font-semibold text-slate-900"><x-money :amount="$netSales" /></dd>
+                        </div>
+                    @endif
+
                     <div class="py-3">
                         <p class="font-semibold text-slate-900">{{ __('app.reports.pnl.expenses_heading') }}</p>
 

@@ -30,6 +30,20 @@ final class SalesReportService
     }
 
     /**
+     * Tax collected within a date range.
+     *
+     * Receipt totals are what the customer actually paid, tax included —
+     * that is the money that reached the till. The tax inside it belongs to
+     * the government, not the shop, so anything measuring the shop's own
+     * earnings (P&L) has to take it back out, and anything being reconciled
+     * against SalesPlay's tax-exclusive "Gross sales" needs it stated.
+     */
+    public function taxBetween(CarbonInterface $start, CarbonInterface $end): float
+    {
+        return (float) Receipt::whereBetween('transaction_date', [$start, $end])->sum('tax');
+    }
+
+    /**
      * Daily totals for every day in the given month, zero-filled for days
      * with no sales.
      *

@@ -76,7 +76,7 @@ class PnlReportController extends Controller
         $data = $this->buildData($request, $period);
 
         $export = new ReportExport(
-            spreadsheet: new PnlExport($data['totalSales'], $data['expensesByCategory'], $data['totalExpenses'], $data['netProfit']),
+            spreadsheet: new PnlExport($data['totalSales'], $data['totalTax'], $data['netSales'], $data['expensesByCategory'], $data['totalExpenses'], $data['netProfit']),
             pdfView: 'exports.pdf.pnl',
             pdfData: [
                 'title' => __('app.reports.pnl.title'),
@@ -90,11 +90,12 @@ class PnlReportController extends Controller
     }
 
     /**
-     * @return array{totalSales: float, expensesByCategory: Collection<int, array{category: string, total: float}>, totalExpenses: float, netProfit: float}
+     * @return array{totalSales: float, totalTax: float, netSales: float, expensesByCategory: Collection<int, array{category: string, total: float}>, totalExpenses: float, netProfit: float}
      */
     private function buildData(Request $request, ReportPeriod $period): array
     {
         $totalSales = $this->reports->totalBetween($period->start, $period->end);
+        $totalTax = $this->reports->taxBetween($period->start, $period->end);
 
         $expensesByCategory = Expense::query()
             ->whereBetween('expense_date', [$period->start, $period->end])
@@ -106,11 +107,19 @@ class PnlReportController extends Controller
 
         $totalExpenses = (float) $expensesByCategory->sum('total');
 
+        // Sales are recorded tax-inclusive (what the customer paid). The tax
+        // portion is collected on the government's behalf, so it is not the
+        // shop's income and must come out before profit is calculated —
+        // otherwise a shop charging 6% looks 6% more profitable than it is.
+        $netSales = $totalSales - $totalTax;
+
         return [
             'totalSales' => $totalSales,
+            'totalTax' => $totalTax,
+            'netSales' => $netSales,
             'expensesByCategory' => $expensesByCategory,
             'totalExpenses' => $totalExpenses,
-            'netProfit' => $totalSales - $totalExpenses,
+            'netProfit' => $netSales - $totalExpenses,
         ];
     }
 }

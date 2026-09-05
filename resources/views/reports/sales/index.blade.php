@@ -8,7 +8,11 @@
 
         <x-period-filter :period="$period" route-name="reports.sales.index" />
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div @class([
+            'grid grid-cols-1 gap-4',
+            'sm:grid-cols-2' => $periodTax <= 0,
+            'sm:grid-cols-3' => $periodTax > 0,
+        ])>
             <x-stat-card :label="__('app.reports.sales.total_sales', ['period' => $period->label])" :value="\App\Support\Money::format($periodTotal)" color="violet">
                 <x-slot name="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
@@ -26,6 +30,20 @@
                     </svg>
                 </x-slot>
             </x-stat-card>
+            {{-- Only shown for shops that actually charge tax. The sales figure
+                 above is what the customer paid, tax included; this states the
+                 tax inside it, so it reconciles against SalesPlay, whose
+                 "Gross sales" is quoted before tax. --}}
+            @if ($periodTax > 0)
+                <x-stat-card :label="__('app.reports.sales.tax_collected')" :value="\App\Support\Money::format($periodTax)" color="teal">
+                    <x-slot name="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                            <path d="M4 20h16" />
+                            <path d="M7 16V9M12 16V5M17 16v-4" />
+                        </svg>
+                    </x-slot>
+                </x-stat-card>
+            @endif
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

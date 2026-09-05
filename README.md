@@ -381,6 +381,28 @@ sidebar/nav, and the Breeze login/password-reset/profile pages — including
 validation error messages (`lang/ms/validation.php`, `auth.php`,
 `passwords.php`, published via `php artisan lang:publish` and translated).
 
+## Tax
+
+Receipt totals are **tax-inclusive** — `total_money` from SalesPlay, i.e. what
+the customer actually paid and what reached the till. SalesPlay's own dashboard
+quotes "Gross sales" **before** tax and reports the tax separately under Tax
+summary, so for a shop charging 6% the two systems show figures ~6% apart for
+the same day. Both are correct; they measure different things.
+
+Two consequences, both handled:
+
+- `/reports/sales` shows a **Tax Collected** card whenever the period has tax,
+  so the takings reconcile against SalesPlay's tax-exclusive figure. Shops with
+  no tax never see the card.
+- `/reports/pnl` deducts tax before profit. Tax is collected on the
+  government's behalf and is not the shop's income — counting it as revenue
+  makes a shop charging 6% look 6% more profitable than it is. The statement
+  reads: total sales → tax collected → net sales → expenses → net profit, with
+  the tax rows hidden for shops that charge none.
+
+`SalesReportService::taxBetween()` is the single source for both. Covered by
+`tests/Feature/TaxSeparationTest.php`.
+
 ## Timezone
 
 `config/app.php` runs the app on `Asia/Kuala_Lumpur`, not UTC. Every shop here

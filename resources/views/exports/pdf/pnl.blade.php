@@ -13,6 +13,16 @@
                 <td><strong>{{ __('app.reports.pnl.total_sales') }}</strong></td>
                 <td class="numeric"><strong>{{ \App\Support\Money::format($totalSales) }}</strong></td>
             </tr>
+            @if ($totalTax > 0)
+                <tr>
+                    <td>{{ __('app.reports.pnl.tax_collected') }}</td>
+                    <td class="numeric">({{ \App\Support\Money::format($totalTax) }})</td>
+                </tr>
+                <tr>
+                    <td><strong>{{ __('app.reports.pnl.net_sales') }}</strong></td>
+                    <td class="numeric"><strong>{{ \App\Support\Money::format($netSales) }}</strong></td>
+                </tr>
+            @endif
             <tr>
                 <td colspan="2">{{ __('app.reports.pnl.expenses_heading') }}</td>
             </tr>
