@@ -381,6 +381,32 @@ sidebar/nav, and the Breeze login/password-reset/profile pages — including
 validation error messages (`lang/ms/validation.php`, `auth.php`,
 `passwords.php`, published via `php artisan lang:publish` and translated).
 
+## Timezone
+
+`config/app.php` runs the app on `Asia/Kuala_Lumpur`, not UTC. Every shop here
+trades in Malaysia and every report is about a Malaysian business day — "today's
+sales", "this month", shift open/close times — and SalesPlay reports its receipt
+timestamps in Malaysia local time too.
+
+On UTC this drifted by the offset: between midnight and 8am local, `today()`
+still resolved to the *previous* Malaysian day, so a late-night shop's sales
+rung up after midnight were reported under the wrong day (and the current day
+looked empty until 8am). Covered by
+`tests/Feature/MalaysianBusinessDayTest.php`.
+
+The API returns bare wall-clock strings with no offset
+(`"2026-07-04 09:07:01"`), so `SalesPlayApiClient::parseApiDate()` parses them
+explicitly in `API_TIMEZONE` rather than relying on the app's timezone happening
+to match — otherwise every synced receipt silently shifts by whatever that
+offset is.
+
+**Note for existing installs:** receipt timestamps were already stored as
+Malaysia wall-clock values, so they are now interpreted correctly with no
+migration. Rows written by the app itself before the change (`created_at`,
+`updated_at`, `last_synced_at`) were stored in UTC and will read 8 hours early;
+`last_synced_at` self-corrects on the next sync (re-fetching a few extra hours
+is idempotent — existing receipts are skipped).
+
 ## Multi-tenancy & security notes
 
 - Every tenant-scoped model (`SalesplayAccount`, `Product`, `Receipt`) uses

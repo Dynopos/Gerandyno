@@ -261,6 +261,17 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
     }
 
     /**
+     * Timestamps come back as bare local wall-clock strings with no offset
+     * ("2026-07-04 09:07:01"), in Malaysia time — see API_TIMEZONE. Parsing
+     * them without saying so leaves them at whatever the app's timezone
+     * happens to be, which silently shifts every receipt by that offset.
+     */
+    private function parseApiDate(string $value): Carbon
+    {
+        return Carbon::parse($value, self::API_TIMEZONE);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      */
     private function mapResponseToPage(array $payload, ?string $previousCursor): SalesPlayReceiptPage
@@ -292,7 +303,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
         return new SalesPlayReceiptData(
             salesplayReceiptId: (string) $receipt['receipt_number'],
             receiptNumber: $receipt['receipt_number'] ?? null,
-            transactionDate: Carbon::parse($receipt['receipt_date_time']),
+            transactionDate: $this->parseApiDate($receipt['receipt_date_time']),
             subtotal: $subtotal,
             discount: (float) ($receipt['total_discount'] ?? 0),
             tax: (float) ($receipt['total_tax'] ?? 0),
@@ -384,7 +395,7 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
             salesplayGrnId: (string) ($grn['id'] ?? $grn['grn_id'] ?? $grn['grn_number']),
             supplierName: $grn['supplier_name'] ?? null,
             invoiceNo: $grn['supplier_invoice_no'] ?? null,
-            receivedAt: isset($grn['grn_date']) ? Carbon::parse($grn['grn_date']) : now(),
+            receivedAt: isset($grn['grn_date']) ? $this->parseApiDate($grn['grn_date']) : now(),
             total: (float) ($grn['grn_total'] ?? $total),
             items: $items,
             raw: $grn,
@@ -403,8 +414,8 @@ class SalesPlayApiClient implements SalesPlayApiClientInterface
         return new SalesPlayShiftData(
             salesplayShiftId: (string) $shift['id'],
             posDeviceId: $shift['pos_device_id'] ?? null,
-            openedAt: isset($shift['opened_at']) ? Carbon::parse($shift['opened_at']) : null,
-            closedAt: isset($shift['closed_at']) ? Carbon::parse($shift['closed_at']) : null,
+            openedAt: isset($shift['opened_at']) ? $this->parseApiDate($shift['opened_at']) : null,
+            closedAt: isset($shift['closed_at']) ? $this->parseApiDate($shift['closed_at']) : null,
             openedByEmployee: $shift['opened_by_employee'] ?? null,
             closedByEmployee: $shift['closed_by_employee'] ?? null,
             startingCash: (float) ($shift['starting_cash'] ?? 0),
