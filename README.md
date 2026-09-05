@@ -425,6 +425,30 @@ Two consequences, both handled:
 `SalesReportService::taxBetween()` is the single source for both. Covered by
 `tests/Feature/TaxSeparationTest.php`.
 
+## Installable app (PWA)
+
+Merchants run this on a phone, so it installs to the home screen rather than
+living behind a typed URL in a browser tab: `public/manifest.webmanifest` plus
+the meta tags in both layouts (`app` and `guest` — a merchant installing the
+app lands on the login page first, before any session exists). `display:
+standalone` drops the browser chrome; `start_url: /dashboard` opens straight
+into the reports.
+
+Icons are generated from `public/images/dynopos-logo.png`. The launcher icons
+use the **circular badge only** — the "DYNOPOS" wordmark under it is
+unreadable at 48px. Both `any` and `maskable` variants ship at 192 and 512:
+Android crops icons to whatever shape the launcher uses, so the maskable ones
+sit inside the 80% safe zone or the badge's edges get shaved off.
+
+**`public/sw.js` deliberately never caches a page.** Every page here is behind
+a login and carries a per-session CSRF token, so a cached page means either
+another merchant's figures on screen or a 419 on the next submit — and this is
+a live sales report, where stale numbers are worse than no numbers. The worker
+skips navigations and non-GET requests entirely, and caches only content-hashed
+Vite output under `/build` plus the app's own images. A new deploy requests new
+hashed filenames, so there is no stale-asset failure mode to manage. Covered by
+`tests/Feature/PwaTest.php`.
+
 ## Timezone
 
 `config/app.php` runs the app on `Asia/Kuala_Lumpur`, not UTC. Every shop here
