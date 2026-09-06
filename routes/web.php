@@ -19,6 +19,7 @@ use App\Http\Controllers\Reports\PnlReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\SalesReportController;
 use App\Http\Controllers\Reports\ShiftReportController;
+use App\Http\Controllers\Reports\SstReportController;
 use App\Http\Controllers\Reports\StockAdjustmentController;
 use App\Http\Controllers\Reports\YearlyReportController;
 use App\Http\Controllers\SyncController;
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/inventory/reset', [StockAdjustmentController::class, 'resetAll'])->name('inventory.reset');
         Route::get('/ai', [AiInsightController::class, 'index'])->name('ai.index');
         Route::post('/ai', [AiInsightController::class, 'generate'])->middleware('throttle:6,1')->name('ai.generate');
+        Route::get('/sst', [SstReportController::class, 'index'])->name('sst');
         Route::get('/pnl', [PnlReportController::class, 'index'])->name('pnl');
         Route::get('/pnl/export/{format}', [PnlReportController::class, 'export'])->name('pnl.export');
         Route::post('/pnl/email', [PnlReportController::class, 'email'])->middleware('throttle:6,1')->name('pnl.email');

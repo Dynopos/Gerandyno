@@ -23,6 +23,40 @@
         </select>
         <x-input-error :messages="$errors->get('status')" class="mt-2" />
     </div>
+
+    {{-- Decides how this company's own figures are read: a registered
+         business collects SST for the government (so it is not income and
+         comes out before profit), an unregistered one keeps it. --}}
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4" x-data="{ sst: {{ old('sst_registered', $company?->sst_registered) ? 'true' : 'false' }} }">
+        <label class="flex items-start gap-3">
+            <input type="hidden" name="sst_registered" value="0">
+            <input type="checkbox" name="sst_registered" value="1" x-model="sst" class="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500">
+            <span>
+                <span class="text-sm font-medium text-slate-900">{{ __('app.admin.companies.sst_registered') }}</span>
+                <span class="mt-0.5 block text-xs text-slate-500">{{ __('app.admin.companies.sst_registered_hint') }}</span>
+            </span>
+        </label>
+
+        <div x-show="sst" style="display: none;" class="mt-4 space-y-4">
+            <div>
+                <x-input-label for="sst_no" :value="__('app.admin.companies.sst_no')" />
+                <x-text-input id="sst_no" name="sst_no" type="text" class="mt-1 block w-full" :value="old('sst_no', $company?->sst_no)" />
+                <x-input-error :messages="$errors->get('sst_no')" class="mt-2" />
+            </div>
+
+            <div>
+                <x-input-label for="ssm_no" :value="__('app.admin.companies.ssm_no')" />
+                <x-text-input id="ssm_no" name="ssm_no" type="text" class="mt-1 block w-full" :value="old('ssm_no', $company?->ssm_no)" />
+                <x-input-error :messages="$errors->get('ssm_no')" class="mt-2" />
+            </div>
+
+            <div>
+                <x-input-label for="address" :value="__('app.admin.companies.address')" />
+                <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" :value="old('address', $company?->address)" />
+                <x-input-error :messages="$errors->get('address')" class="mt-2" />
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="mt-6 flex items-center justify-end gap-3">

@@ -37,7 +37,13 @@ class CompanyController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'status' => ['required', 'in:active,inactive'],
+            'sst_registered' => ['boolean'],
+            'sst_no' => ['nullable', 'string', 'max:255'],
+            'ssm_no' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $validated['sst_registered'] = $request->boolean('sst_registered');
 
         $company = Company::create($validated);
 
@@ -63,7 +69,13 @@ class CompanyController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'status' => ['required', 'in:active,inactive'],
+            'sst_registered' => ['boolean'],
+            'sst_no' => ['nullable', 'string', 'max:255'],
+            'ssm_no' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $validated['sst_registered'] = $request->boolean('sst_registered');
 
         $company->update($validated);
 

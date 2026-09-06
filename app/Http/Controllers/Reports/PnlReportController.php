@@ -107,10 +107,13 @@ class PnlReportController extends Controller
 
         $totalExpenses = (float) $expensesByCategory->sum('total');
 
-        // Sales are recorded tax-inclusive (what the customer paid). The tax
-        // portion is collected on the government's behalf, so it is not the
-        // shop's income and must come out before profit is calculated —
-        // otherwise a shop charging 6% looks 6% more profitable than it is.
+        // Sales are recorded tax-inclusive (what the customer paid). Whether
+        // the tax inside them is income depends on the shop, and nothing in
+        // the receipts says which: a registered business collects SST on the
+        // government's behalf, so it must come out before profit; an
+        // unregistered one keeps it, and deducting it would understate their
+        // earnings just as counting it overstates a registered shop's.
+        $totalTax = $request->user()->company->sst_registered ? $totalTax : 0.0;
         $netSales = $totalSales - $totalTax;
 
         return [
