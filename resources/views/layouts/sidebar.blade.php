@@ -2,7 +2,7 @@
 <div class="flex h-16 shrink-0 items-center justify-between gap-2 px-5">
     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
         <span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-violet-200">
-            <img src="{{ asset('images/dynopos-logo.jpg') }}" alt="DynoPOS" class="h-full w-full scale-125 object-cover">
+            <img src="{{ asset('images/dynopos-logo.png') }}" alt="DynoPOS" class="h-full w-full scale-125 object-cover">
         </span>
         <span class="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-lg font-semibold tracking-tight text-transparent">DynoPOS</span>
     </a>

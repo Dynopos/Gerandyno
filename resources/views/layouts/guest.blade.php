@@ -5,6 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Installable on a merchant's phone: a home-screen icon straight
+             into the dashboard, with no browser chrome eating the screen. --}}
+        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+        <meta name="theme-color" content="#7c3aed">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="DynoPOS">
+        <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
@@ -22,7 +33,7 @@
 
             <div>
                 <a href="/" class="flex flex-col items-center gap-2">
-                    <img src="{{ asset('images/dynopos-logo.jpg') }}" alt="DynoPOS" class="h-20 w-20 rounded-full object-cover shadow-md ring-2 ring-violet-400/60">
+                    <img src="{{ asset('images/dynopos-logo.png') }}" alt="DynoPOS" class="h-20 w-20 rounded-full object-cover shadow-md ring-2 ring-violet-400/60">
                     <span class="text-lg font-semibold tracking-tight text-gray-800">DynoPOS</span>
                 </a>
             </div>
