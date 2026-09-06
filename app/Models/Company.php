@@ -7,10 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'status'])]
+#[Fillable(['name', 'status', 'sst_registered', 'sst_no', 'ssm_no', 'address'])]
 class Company extends Model
 {
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'sst_registered' => 'boolean',
+        ];
+    }
 
     public function users(): HasMany
     {

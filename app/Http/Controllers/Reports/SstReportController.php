@@ -23,12 +23,19 @@ class SstReportController extends Controller
 
     public function index(Request $request): View
     {
+        $company = $request->user()->company;
+
+        // Only a registered business files an SST-02. For everyone else the
+        // figures on this page would be meaningless — the tax SalesPlay
+        // records for them is their own money, not the government's.
+        abort_unless($company->sst_registered, 404);
+
         [$from, $until] = $this->resolvePeriod($request);
 
         $months = $this->monthlyRows($from, $until);
 
         return view('reports.sst', [
-            'company' => $request->user()->company,
+            'company' => $company,
             'months' => $months,
             'from' => $from,
             'until' => $until,

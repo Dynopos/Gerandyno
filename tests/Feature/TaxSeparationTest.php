@@ -32,7 +32,10 @@ class TaxSeparationTest extends TestCase
      */
     private function shopWithTax(): array
     {
-        $company = Company::factory()->create();
+        // Registered, so the tax it collects belongs to the government and
+        // comes out before profit. The unregistered case — where the shop
+        // keeps it — is covered by SstReportTest.
+        $company = Company::factory()->create(['sst_registered' => true]);
         $account = SalesplayAccount::factory()->create(['company_id' => $company->id]);
         $user = User::factory()->create(['company_id' => $company->id, 'role' => 'customer']);
 

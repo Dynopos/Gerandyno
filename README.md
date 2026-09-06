@@ -403,7 +403,7 @@ sidebar/nav, and the Breeze login/password-reset/profile pages — including
 validation error messages (`lang/ms/validation.php`, `auth.php`,
 `passwords.php`, published via `php artisan lang:publish` and translated).
 
-## Tax
+## Tax and SST
 
 Receipt totals are **tax-inclusive** — `total_money` from SalesPlay, i.e. what
 the customer actually paid and what reached the till. SalesPlay's own dashboard
@@ -416,14 +416,24 @@ Two consequences, both handled:
 - `/reports/sales` shows a **Tax Collected** card whenever the period has tax,
   so the takings reconcile against SalesPlay's tax-exclusive figure. Shops with
   no tax never see the card.
-- `/reports/pnl` deducts tax before profit. Tax is collected on the
-  government's behalf and is not the shop's income — counting it as revenue
-  makes a shop charging 6% look 6% more profitable than it is. The statement
-  reads: total sales → tax collected → net sales → expenses → net profit, with
-  the tax rows hidden for shops that charge none.
+- `/reports/pnl` deducts tax before profit **for SST-registered shops only**.
+  Whether that tax is income depends on the shop, and nothing in the receipts
+  says which: a registered business collects it for the government, an
+  unregistered one keeps every ringgit it takes. Deducting it from an
+  unregistered shop understates their earnings exactly as counting it
+  overstates a registered shop's — this came up on a real shop with a stray 6%
+  configured in SalesPlay that it never remits. Admins set the flag per
+  company at `/admin/companies` (`companies.sst_registered`, default off),
+  along with the SST/SSM numbers and address an SST-02 return has to carry.
+- `/reports/sst` is the printable SST-02 working sheet: taxable service value
+  (takings less the tax inside them), SST collected, and transaction count per
+  month. It 404s and its sidebar tab is hidden for shops that are not
+  registered — the figures would be meaningless for them.
 
-`SalesReportService::taxBetween()` is the single source for both. Covered by
-`tests/Feature/TaxSeparationTest.php`.
+`SalesReportService::taxBetween()` is the single source for the sales and P&L
+figures. Covered by `tests/Feature/TaxSeparationTest.php` (a registered shop)
+and `tests/Feature/SstReportTest.php` (registered vs not, and the SST report's
+own access rules and tenant isolation).
 
 ## Installable app (PWA)
 
